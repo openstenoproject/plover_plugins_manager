@@ -1,0 +1,17 @@
+{
+    "files": [
+        [
+            "plover_plugins_manager/gui_qt/resources/*.qrc",
+            "plover_plugins_manager/gui_qt"
+        ],
+        [
+            "plover_plugins_manager/gui_qt/*.ui",
+            "plover_plugins_manager/gui_qt"
+        ]
+    ],
+    "pyrcc": "pyrcc5",
+    "pyrcc_options": "",
+    "pyuic": "pyuic5",
+    "pyuic_options": "--from-import",
+    "hooks": []
+}

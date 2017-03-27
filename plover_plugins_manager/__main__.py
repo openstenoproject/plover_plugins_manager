@@ -1,0 +1,93 @@
+
+import itertools
+import os
+import subprocess
+import sys
+import textwrap
+
+from plover.registry import registry
+
+from plover_plugins_manager import global_registry
+from plover_plugins_manager import local_registry
+
+
+def list_plugins():
+    installed_plugins = local_registry.list_plugins()
+    available_plugins = global_registry.list_plugins()
+    for name, installed, available in sorted(
+        (name,
+         installed_plugins.get(name, []),
+         available_plugins.get(name, []))
+        for name in set(itertools.chain(installed_plugins,
+                                        available_plugins))
+    ):
+        latest = available[-1] if available else None
+        current = installed[-1] if installed else None
+        info = latest or current
+        print('%s (%s)  - %s' % (info.name, info.version, info.summary))
+        if current:
+            print('  INSTALLED: %s' % current.version)
+            if latest:
+                print('  LATEST:    %s' % latest.version)
+
+
+def pip(args, stdin=None, stdout=None, stderr=None):
+    # Note:
+    # - we need to use a subprocess in order to update sys.path so
+    #   pip sees all installed distributions, even those that are
+    #   not loaded by registry.load_plugins() because of missing
+    #   requirements.
+    # - we patch site.USER_SITE so we can use `pip install --user`
+    #   and not touch system packages
+    # - on Windows, we need to patch sys.executable from `pythonw.exe`
+    #   to `python.exe` if we want some console output...
+    executable = sys.executable
+    # if sys.platform.startswith('win32'):
+    #     if executable.endswith('pythonw.exe'):
+    #         executable = executable[:-len('pythonw.exe')] + 'python.exe'
+    cmd = [
+        executable, '-c',
+        textwrap.dedent('''
+        import sys
+        import site
+        site.USER_SITE = sys.argv.pop(1)
+        sys.path.insert(0, site.USER_SITE)
+        from pkg_resources import load_entry_point
+        load_entry_point('pip', 'console_scripts', 'pip')()
+        '''),
+        registry.get_plugins_dir(),
+    ]
+    command = args.pop(0)
+    if command == 'check':
+        cmd.append('check')
+    elif command == 'install':
+        cmd.extend((
+            'install',
+            '--user',
+            '--upgrade-strategy=only-if-needed',
+        ))
+    elif command == 'uninstall':
+        cmd.append('uninstall')
+    elif command == 'list':
+        cmd.extend((
+            'list',
+            '--format=columns',
+        ))
+    else:
+        raise ValueError('invalid command: %s' % command)
+    cmd.extend(args)
+    return subprocess.Popen(cmd, stdin=stdin, stdout=stdout, stderr=stderr)
+
+
+def main(args=None):
+    if args is None:
+        args = sys.argv[1:]
+    if args[0] == 'list_plugins':
+        assert len(args) == 1
+        sys.exit(list_plugins())
+    proc = pip(args)
+    sys.exit(proc.wait())
+
+
+if '__main__' == __name__:
+    main()
