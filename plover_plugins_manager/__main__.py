@@ -53,7 +53,7 @@ def pip(args, stdin=None, stdout=None, stderr=None):
         site.USER_SITE = sys.argv.pop(1)
         sys.path.insert(0, site.USER_SITE)
         from pkg_resources import load_entry_point
-        load_entry_point('pip', 'console_scripts', 'pip')()
+        sys.exit(load_entry_point('pip', 'console_scripts', 'pip')())
         '''),
         registry.get_plugins_dir(),
     ]
