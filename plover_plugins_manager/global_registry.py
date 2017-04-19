@@ -15,6 +15,7 @@ from plover_plugins_manager.plugin_metadata import PluginMetadata
 
 
 CACHE_FILE = os.path.join(CONFIG_DIR, '.cache', 'plugins.json')
+CACHE_VERSION = 1
 
 
 def load_cache():
@@ -40,7 +41,8 @@ def list_plugins():
     pypi = xmlrpc_client.ServerProxy(index_url, transport)
     cache = load_cache()
     last_serial = pypi.changelog_last_serial()
-    if last_serial == cache.get('last_serial'):
+    if cache.get('version') == CACHE_VERSION and \
+       cache.get('last_serial') == last_serial:
         plugins = {
             name: [PluginMetadata(*[
                 v.get(k, '')
@@ -64,7 +66,7 @@ def list_plugins():
         name: list(sorted(versions))
         for name, versions in plugins.items()
     }
-    save_cache(last_serial=last_serial,
+    save_cache(version=CACHE_VERSION, last_serial=last_serial,
                plugins={
                    name: [v.to_dict() for v in versions]
                    for name, versions in plugins.items()
