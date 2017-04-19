@@ -15,6 +15,8 @@ class CustomBuildPy(build_py):
             self.run_command(command)
         build_py.run(self)
 
+cmdclass['build_py'] = CustomBuildPy
+
 
 try:
     from pyqt_distutils.build_ui import build_ui
