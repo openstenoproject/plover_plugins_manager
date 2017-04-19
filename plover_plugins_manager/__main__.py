@@ -1,11 +1,10 @@
 
 import itertools
-import os
 import subprocess
 import sys
 import textwrap
 
-from plover.registry import registry
+from plover.oslayer.config import PLUGINS_DIR
 
 from plover_plugins_manager import global_registry
 from plover_plugins_manager import local_registry
@@ -32,30 +31,18 @@ def list_plugins():
 
 
 def pip(args, stdin=None, stdout=None, stderr=None):
-    # Note:
-    # - we need to use a subprocess in order to update sys.path so
-    #   pip sees all installed distributions, even those that are
-    #   not loaded by registry.load_plugins() because of missing
-    #   requirements.
-    # - we patch site.USER_SITE so we can use `pip install --user`
-    #   and not touch system packages
-    # - on Windows, we need to patch sys.executable from `pythonw.exe`
-    #   to `python.exe` if we want some console output...
-    executable = sys.executable
-    # if sys.platform.startswith('win32'):
-    #     if executable.endswith('pythonw.exe'):
-    #         executable = executable[:-len('pythonw.exe')] + 'python.exe'
+    # Note: we use a subprocess and patch site.USER_SITE so
+    # `pip install --user` will not touch system packages.
     cmd = [
-        executable, '-c',
+        sys.executable, '-c',
         textwrap.dedent('''
-        import sys
-        import site
+        import site, sys
         site.USER_SITE = sys.argv.pop(1)
         sys.path.insert(0, site.USER_SITE)
         from pkg_resources import load_entry_point
         sys.exit(load_entry_point('pip', 'console_scripts', 'pip')())
         '''),
-        registry.get_plugins_dir(),
+        PLUGINS_DIR,
     ]
     command = args.pop(0)
     if command == 'check':
