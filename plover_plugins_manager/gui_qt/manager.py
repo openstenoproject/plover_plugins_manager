@@ -1,7 +1,8 @@
 
 from collections import OrderedDict, namedtuple
-import itertools
+import atexit
 import cgi
+import itertools
 import os
 import sys
 
@@ -65,6 +66,7 @@ class PluginsManager(Tool, Ui_PluginsManager):
     def __init__(self, engine):
         super(PluginsManager, self).__init__(engine)
         self.setupUi(self)
+        self._engine = engine
         self.table.sortByColumn(1, Qt.AscendingOrder)
         if not self._packages:
             self._update_packages()
@@ -169,13 +171,14 @@ class PluginsManager(Tool, Ui_PluginsManager):
         self.info.insertHtml(prologue + description)
 
     def on_restart(self):
-        # FIXME:
-        # - stop the engine
-        # - "quit" the application (save settings)
-        args = sys.argv[:]
-        if args[0].endswith('.py') or args[0].endswith('.pyc'):
-            args.insert(0, sys.executable)
-        os.execv(args[0], args)
+        if self._engine is not None:
+            self._engine.restart()
+        else:
+            atexit._run_exitfuncs()
+            args = sys.argv[:]
+            if args[0].endswith('.py') or args[0].endswith('.pyc'):
+                args.insert(0, sys.executable)
+            os.execv(args[0], args)
 
     def on_install(self):
         packages = self._get_selection()[0]
