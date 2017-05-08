@@ -55,6 +55,9 @@ def list_plugins():
     for match in pypi.search({'keywords': 'plover'}):
         name, version = match['name'], match['version']
         metadata_dict = pypi.release_data(name, version)
+        # Can happen if a package has been deleted.
+        if not metadata_dict:
+            continue
         plugin_metadata = PluginMetadata(*[
             metadata_dict.get(k, '')
             for k in PluginMetadata._fields
