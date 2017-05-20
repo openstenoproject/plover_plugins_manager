@@ -35,7 +35,7 @@ def save_cache(**kwargs):
 def list_plugins():
     session = PipSession()
     index_url = PyPI.pypi_url
-    index_url = 'https://testpypi.python.org/pypi'
+    index_url = 'https://pypi.python.org/pypi'
     # We use pip's session/transport to avoid SSL errors on Windows/macOS...
     transport = PipXmlrpcTransport(index_url, session)
     pypi = xmlrpc_client.ServerProxy(index_url, transport)

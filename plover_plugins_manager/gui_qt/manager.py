@@ -184,8 +184,8 @@ class PluginsManager(Tool, Ui_PluginsManager):
         packages = self._get_selection()[0]
         code = self._run(
             ['install'] +
-            ['--extra-index-url', 'https://testpypi.python.org/pypi'] +
-            [self._packages[name].latest.requirement for name in packages]
+            [self._packages[name].latest.requirement
+             for name in packages]
         )
         if code == QDialog.Accepted:
             for name in packages:
