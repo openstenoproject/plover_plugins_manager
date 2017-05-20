@@ -52,7 +52,7 @@ def list_plugins():
         }
         return plugins
     plugins = defaultdict(list)
-    for match in pypi.search({'keywords': 'plover'}):
+    for match in pypi.search({'keywords': 'plover_plugin'}):
         name, version = match['name'], match['version']
         metadata_dict = pypi.release_data(name, version)
         # Can happen if a package has been deleted.
