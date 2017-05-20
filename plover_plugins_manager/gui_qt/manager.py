@@ -210,7 +210,6 @@ class PluginsManager(Tool, Ui_PluginsManager):
 if '__main__' == __name__:
     from PyQt5.QtWidgets import QApplication
     from plover.registry import registry
-    registry.load_plugins()
     registry.update()
     app = QApplication([])
     dlg = PluginsManager(None)
