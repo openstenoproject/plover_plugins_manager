@@ -33,7 +33,7 @@ class PluginsManager(Tool, Ui_PluginsManager):
 
     TITLE = 'Plugins Manager'
     ROLE = 'plugins_manager'
-    ICON = ':/eggs_nest.svg'
+    ICON = ':/icon.svg'
 
     class PackageState(object):
 
