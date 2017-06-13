@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>640</width>
-    <height>480</height>
+    <width>800</width>
+    <height>600</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -95,21 +95,18 @@
         </widget>
        </item>
        <item row="6" column="0" colspan="3">
-        <widget class="QTextBrowser" name="info">
+        <widget class="QWebEngineView" name="info" native="true">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
-         <property name="readOnly">
+         <property name="readOnly" stdset="0">
           <bool>true</bool>
          </property>
-         <property name="textInteractionFlags">
-          <set>Qt::TextBrowserInteraction</set>
-         </property>
-         <property name="openExternalLinks">
-          <bool>true</bool>
+         <property name="openExternalLinks" stdset="0">
+          <bool>false</bool>
          </property>
         </widget>
        </item>
@@ -119,6 +116,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QWebEngineView</class>
+   <extends>QWidget</extends>
+   <header>qwebengineview.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="resources/resources.qrc"/>
  </resources>

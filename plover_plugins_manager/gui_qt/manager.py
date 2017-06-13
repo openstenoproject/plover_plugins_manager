@@ -6,11 +6,9 @@ import itertools
 import os
 import sys
 
-from pygments import highlight
-from pygments.formatters import get_formatter_by_name
-from pygments.lexers import get_lexer_for_mimetype
+from docutils.core import publish_parts
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QUrl
 from PyQt5.QtWidgets import QDialog, QTableWidgetItem
 
 from plover.gui_qt.tool import Tool
@@ -22,11 +20,8 @@ from plover_plugins_manager.__main__ import pip
 
 
 def _rst_to_html(text):
-    lexer = get_lexer_for_mimetype('text/x-rst')
-    formatter = get_formatter_by_name('html')
-    css = formatter.get_style_defs()
-    html = highlight(text, lexer, formatter)
-    return css, html
+    html = publish_parts(text, writer_name='s5_html')
+    return html['stylesheet'], html['html_title'] + html['body']
 
 
 class PluginsManager(Tool, Ui_PluginsManager):
@@ -144,7 +139,7 @@ class PluginsManager(Tool, Ui_PluginsManager):
         can_install, can_uninstall = self._get_selection()
         self.uninstall_button.setEnabled(bool(can_uninstall))
         self.install_button.setEnabled(bool(can_install))
-        self.info.clear()
+        self.info.setUrl(QUrl(''))
         current_item = self.table.currentItem()
         if current_item is None:
             return
@@ -156,10 +151,10 @@ class PluginsManager(Tool, Ui_PluginsManager):
             cgi.escape(metadata.version),
         )
         if metadata.author and metadata.author_email:
-            prologue += '<p><b>Author: </b>%s</p>' % cgi.escape('%s <%s>' % (
-                metadata.author,
-                metadata.author_email
-            ))
+            prologue += '<p><b>Author: </b><a href="mailto:%s">%s</a></p>' % (
+                cgi.escape(metadata.author_email),
+                cgi.escape(metadata.author),
+            )
         if metadata.home_page:
             prologue += '<p><b>Home page: </b><a href="%s">%s</a></p>' % (
                 metadata.home_page,
@@ -167,8 +162,7 @@ class PluginsManager(Tool, Ui_PluginsManager):
             )
         prologue += '<hr>'
         css, description = _rst_to_html(metadata.description or metadata.summary)
-        self.info.document().setDefaultStyleSheet(css)
-        self.info.insertHtml(prologue + description)
+        self.info.setHtml(css + prologue + description)
 
     def on_restart(self):
         if self._engine is not None:
