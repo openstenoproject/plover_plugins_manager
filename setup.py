@@ -1,35 +1,22 @@
 #!/usr/bin/env python3
 
+__requires__ = '''
+plover>=4.0.0.dev2
+setuptools>=30.3.0
+'''
+
 from setuptools import setup
-from setuptools.command.build_py import build_py
+
+from plover_build_utils.setup import BuildPy, BuildUi
 
 
-build_dependencies = []
-cmdclass = {}
-
-
-class CustomBuildPy(build_py):
-
-    def run(self):
-        for command in build_dependencies:
-            self.run_command(command)
-        build_py.run(self)
-
-cmdclass['build_py'] = CustomBuildPy
-
-
-try:
-    from pyqt_distutils.build_ui import build_ui
-except ImportError:
-    pass
-else:
-    class BuildUi(build_ui):
-
-        def run(self):
-            build_ui.run(self)
-
-    cmdclass['build_ui'] = BuildUi
-    build_dependencies.append('build_ui')
-
+BuildPy.build_dependencies.append('build_ui')
+BuildUi.hooks = ['plover_build_utils.pyqt:fix_icons']
+cmdclass = {
+    'build_py': BuildPy,
+    'build_ui': BuildUi,
+}
 
 setup(cmdclass=cmdclass)
+
+# vim: foldmethod=marker
