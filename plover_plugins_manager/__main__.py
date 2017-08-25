@@ -4,7 +4,7 @@ import subprocess
 import sys
 import textwrap
 
-from plover.oslayer.config import PLUGINS_DIR
+from plover.oslayer.config import PLUGINS_BASE, PLUGINS_DIR
 
 from plover_plugins_manager import global_registry
 from plover_plugins_manager import local_registry
@@ -38,14 +38,11 @@ def list_plugins(freeze=False):
 
 
 def pip(args, stdin=None, stdout=None, stderr=None):
-    # Note: we use a subprocess and patch site.USER_SITE so
-    # `pip install --user` will not touch system packages.
     cmd = [
         sys.executable, '-c',
         textwrap.dedent('''
-        import site, sys
-        site.USER_SITE = sys.argv.pop(1)
-        sys.path.insert(0, site.USER_SITE)
+        import sys
+        sys.path.insert(0, sys.argv.pop(1))
         from pkg_resources import load_entry_point
         sys.exit(load_entry_point('pip', 'console_scripts', 'pip')())
         '''),
@@ -57,7 +54,7 @@ def pip(args, stdin=None, stdout=None, stderr=None):
     elif command == 'install':
         cmd.extend((
             'install',
-            '--user',
+            '--prefix', PLUGINS_BASE,
             '--upgrade-strategy=only-if-needed',
         ))
     elif command == 'uninstall':
