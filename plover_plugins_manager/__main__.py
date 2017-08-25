@@ -10,9 +10,12 @@ from plover_plugins_manager import global_registry
 from plover_plugins_manager import local_registry
 
 
-def list_plugins():
+def list_plugins(freeze=False):
     installed_plugins = local_registry.list_plugins()
-    available_plugins = global_registry.list_plugins()
+    if freeze:
+        available_plugins = global_registry.list_plugins()
+    else:
+        available_plugins = []
     for name, installed, available in sorted(
         (name,
          installed_plugins.get(name, []),
@@ -23,6 +26,10 @@ def list_plugins():
         latest = available[-1] if available else None
         current = installed[-1] if installed else None
         info = latest or current
+        if freeze:
+            if current:
+                print('%s==%s' % (current.name, current.version))
+            continue
         print('%s (%s)  - %s' % (info.name, info.version, info.summary))
         if current:
             print('  INSTALLED: %s' % current.version)
@@ -70,8 +77,13 @@ def main(args=None):
     if args is None:
         args = sys.argv[1:]
     if args[0] == 'list_plugins':
-        assert len(args) == 1
-        sys.exit(list_plugins())
+        assert len(args) <= 2
+        if len(args) > 1:
+            assert args[1] == '--freeze'
+            freeze = True
+        else:
+            freeze = False
+        sys.exit(list_plugins(freeze=freeze))
     proc = pip(args)
     sys.exit(proc.wait())
 
