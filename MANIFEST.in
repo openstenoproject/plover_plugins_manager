@@ -1,0 +1,10 @@
+# Tests.
+include test/plover_template_system-0.1.0-py2.py3-none-any.whl
+include test/plover_template_system-0.1.0.tar.gz
+include test/requirements.txt
+include tox.ini
+# UI.
+exclude plover_plugins_manager/gui_qt/*_rc.py
+exclude plover_plugins_manager/gui_qt/*_ui.py
+include plover_plugins_manager/gui_qt/*.ui
+recursive-include plover_plugins_manager/gui_qt/resources *
