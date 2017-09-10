@@ -1,5 +1,5 @@
 <RCC>
-  <qresource>
+  <qresource prefix="/plugins_manager">
     <file>icon.svg</file>
   </qresource>
 </RCC>

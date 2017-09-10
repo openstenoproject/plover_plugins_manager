@@ -28,7 +28,7 @@ class PluginsManager(Tool, Ui_PluginsManager):
 
     TITLE = 'Plugins Manager'
     ROLE = 'plugins_manager'
-    ICON = ':/icon.svg'
+    ICON = ':/plugins_manager/icon.svg'
 
     class PackageState(object):
 
