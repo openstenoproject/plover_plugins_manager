@@ -12,9 +12,11 @@ import pytest
 
 
 TEST_DIR = Path(__file__).parent
-TEST_DIST = 'plover-template-system==0.1.0'
-TEST_SDIST = TEST_DIR / 'plover_template_system-0.1.0.tar.gz'
-TEST_WHEEL = TEST_DIR / 'plover_template_system-0.1.0-py2.py3-none-any.whl'
+TEST_DIST_0_1_0 = 'plover-template-system==0.1.0'
+TEST_DIST_0_2_0 = 'plover-template-system==0.2.0'
+TEST_SDIST_0_1_0 = TEST_DIR / 'plover_template_system-0.1.0.tar.gz'
+TEST_WHEEL_0_1_0 = TEST_DIR / 'plover_template_system-0.1.0-py2.py3-none-any.whl'
+TEST_WHEEL_0_2_0 = TEST_DIR / 'plover_template_system-0.2.0-py2.py3-none-any.whl'
 MANAGER_DIST = str(pkg_resources.get_distribution('plover_plugins_manager').as_requirement())
 
 
@@ -143,13 +145,25 @@ def test_list_plugins(virtualenv):
                                 ''' % MANAGER_DIST)
 
 def test_sdist_install(virtualenv):
-    install_plugins(virtualenv, [TEST_SDIST])
-    assert list_plugins_dir_dists(virtualenv) == [TEST_DIST]
+    install_plugins(virtualenv, [TEST_SDIST_0_1_0])
+    assert list_plugins_dir_dists(virtualenv) == [TEST_DIST_0_1_0]
     uninstall_plugins(virtualenv, ['plover-template-system'])
     assert list_plugins_dir_dists(virtualenv) == []
 
 def test_wheel_install(virtualenv):
-    install_plugins(virtualenv, [TEST_WHEEL])
-    assert list_plugins_dir_dists(virtualenv) == [TEST_DIST]
+    install_plugins(virtualenv, [TEST_WHEEL_0_1_0])
+    assert list_plugins_dir_dists(virtualenv) == [TEST_DIST_0_1_0]
     uninstall_plugins(virtualenv, ['plover-template-system'])
     assert list_plugins_dir_dists(virtualenv) == []
+
+def test_plugin_update(virtualenv):
+    install_plugins(virtualenv, [TEST_WHEEL_0_1_0])
+    assert list_plugins_dir_dists(virtualenv) == [TEST_DIST_0_1_0]
+    install_plugins(virtualenv, [TEST_WHEEL_0_2_0])
+    assert list_plugins_dir_dists(virtualenv) == [TEST_DIST_0_2_0]
+
+def test_plugin_downgrade(virtualenv):
+    install_plugins(virtualenv, [TEST_WHEEL_0_2_0])
+    assert list_plugins_dir_dists(virtualenv) == [TEST_DIST_0_2_0]
+    install_plugins(virtualenv, [TEST_WHEEL_0_1_0])
+    assert list_plugins_dir_dists(virtualenv) == [TEST_DIST_0_1_0]
