@@ -22,20 +22,6 @@ def DALS(s):
     "dedent and left-strip"
     return textwrap.dedent(s).lstrip()
 
-def lndir(src, dst):
-    os.mkdir(dst)
-    dst_to_src = os.path.relpath(src, dst)
-    for dirpath, dirnames, filenames in os.walk(src):
-        src_path = os.path.join(src, dirpath)
-        dst_path = os.path.join(dst, os.path.relpath(dirpath, src))
-        for d in dirnames:
-            d = os.path.join(dst_path, d)
-            os.mkdir(d)
-        for f in filenames:
-            l = os.path.join(dst_path, f)
-            t = os.path.join(src_path, f)
-            os.link(t, l)
-
 
 class VirtualEnv(object):
 
@@ -69,7 +55,7 @@ class VirtualEnv(object):
     def thaw(self):
         self._chmod_venv(stat.S_IWUSR | stat.S_IWGRP | stat.S_IWOTH, 0)
 
-    def clone_distribution(self, dist_name, hardlink=False, verbose=False):
+    def clone_distribution(self, dist_name, verbose=False):
         """
         Clone a distribution from the current
         environment to the virtual environment.
@@ -77,13 +63,7 @@ class VirtualEnv(object):
         def clone(src_path):
             dst_path = self.site_packages / src_path.name
             isdir = src_path.isdir()
-            if hardlink:
-                if isdir:
-                    lndir(src_path, dst_path)
-                else:
-                    src_path.link(dst_path)
-            else:
-                (src_path.copytree if isdir else src_path.copyfile)(dst_path)
+            (src_path.copytree if isdir else src_path.copyfile)(dst_path)
         src_dist = pkg_resources.get_distribution(dist_name)
         # Copy distribution info.
         clone(Path(src_dist.egg_info))
@@ -128,7 +108,7 @@ def virtualenv(workspace):
     resolve_deps(pkg_resources.get_distribution('plover_plugins_manager'))
     resolve_deps(pkg_resources.get_distribution('PyQt5'))
     for dist_name in sorted(dist.project_name for dist in deps):
-        virtualenv.clone_distribution(dist_name, hardlink=False)
+        virtualenv.clone_distribution(dist_name)
     virtualenv.freeze()
     yield virtualenv
     virtualenv.thaw()
