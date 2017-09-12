@@ -2,6 +2,7 @@ import ast
 import distutils
 import importlib
 import os
+import stat
 import textwrap
 
 from path import Path
@@ -43,7 +44,30 @@ class VirtualEnv(object):
         self.venv = workspace.workspace / 'venv'
         self.site_packages = Path(distutils.sysconfig.get_python_lib(prefix=self.venv))
         create_environment(self.venv, no_setuptools=True, no_pip=True, no_wheel=True)
-        (self.venv / 'plover.cfg').touch()
+        self.plover = self.venv / 'plover'
+        self.plover.mkdir()
+        (self.plover / 'plover.cfg').touch()
+
+    def _chmod_venv(self, add_mode, rm_mode):
+        plover_path = self.plover.abspath()
+        for dirpath, dirnames, filenames in os.walk(self.venv.abspath(), topdown=False):
+            for p in dirnames + filenames:
+                p = os.path.join(dirpath, p)
+                if p == plover_path:
+                    continue
+                st_mode = os.lstat(p).st_mode
+                if stat.S_ISLNK(st_mode):
+                    continue
+                old_mode = stat.S_IMODE(st_mode)
+                new_mode = (old_mode | add_mode) & ~rm_mode
+                # print(p, oct(old_mode), oct(new_mode))
+                os.chmod(p, new_mode)
+
+    def freeze(self):
+        self._chmod_venv(0, stat.S_IWUSR | stat.S_IWGRP | stat.S_IWOTH)
+
+    def thaw(self):
+        self._chmod_venv(stat.S_IWUSR | stat.S_IWGRP | stat.S_IWOTH, 0)
 
     def clone_distribution(self, dist_name, hardlink=False, verbose=False):
         """
@@ -79,7 +103,7 @@ class VirtualEnv(object):
             PATH=os.pathsep.join((self.venv.realpath() / 'bin', env['PATH'])),
         ))
         return self.workspace.run(cmd, capture=capture, env=env,
-                                  cwd=self.venv.abspath())
+                                  cwd=self.plover.abspath())
 
     def pyrun(self, args, capture=False):
         return self.run(['python'] + args, capture=capture)
@@ -104,8 +128,10 @@ def virtualenv(workspace):
     resolve_deps(pkg_resources.get_distribution('plover_plugins_manager'))
     resolve_deps(pkg_resources.get_distribution('PyQt5'))
     for dist_name in sorted(dist.project_name for dist in deps):
-        virtualenv.clone_distribution(dist_name, hardlink=True)
+        virtualenv.clone_distribution(dist_name, hardlink=False)
+    virtualenv.freeze()
     yield virtualenv
+    virtualenv.thaw()
     # Workaround workspace not cleaning itself as it should...
     virtualenv.workspace.delete = True
     virtualenv.workspace.teardown()
