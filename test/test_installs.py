@@ -1,3 +1,4 @@
+from path import Path
 import ast
 import distutils
 import importlib
@@ -5,15 +6,15 @@ import os
 import stat
 import textwrap
 
-from path import Path
 from virtualenv import create_environment
 import pkg_resources
 import pytest
 
 
 TEST_DIR = Path(__file__).parent
-TEST_DIST_0_1_0 = 'plover-template-system==0.1.0'
-TEST_DIST_0_2_0 = 'plover-template-system==0.2.0'
+TEST_DIST = 'plover-template-system'
+TEST_DIST_0_1_0 = TEST_DIST + '==0.1.0'
+TEST_DIST_0_2_0 = TEST_DIST + '==0.2.0'
 TEST_SDIST_0_1_0 = TEST_DIR / 'plover_template_system-0.1.0.tar.gz'
 TEST_WHEEL_0_1_0 = TEST_DIR / 'plover_template_system-0.1.0-py2.py3-none-any.whl'
 TEST_WHEEL_0_2_0 = TEST_DIR / 'plover_template_system-0.2.0-py2.py3-none-any.whl'
@@ -24,6 +25,13 @@ def DALS(s):
     "dedent and left-strip"
     return textwrap.dedent(s).lstrip()
 
+def patch_file(filename, patch):
+    with open(filename, 'r') as fp:
+        contents = fp.read()
+    contents = patch(contents)
+    with open(filename, 'w') as fp:
+        fp.write(contents)
+
 
 class VirtualEnv(object):
 
@@ -32,9 +40,46 @@ class VirtualEnv(object):
         self.venv = workspace.workspace / 'venv'
         self.site_packages = Path(distutils.sysconfig.get_python_lib(prefix=self.venv))
         create_environment(self.venv, no_setuptools=True, no_pip=True, no_wheel=True)
+        lib_dir = self.site_packages / '..'
+        (lib_dir / 'no-global-site-packages.txt').unlink()
+        # Disable user' site.
+        patch_file(lib_dir / 'site.py', lambda s: s.replace(
+            '\nENABLE_USER_SITE = None\n',
+            '\nENABLE_USER_SITE = False\n',
+        ))
+        # Create fake home directory.
+        self.home = self.workspace.workspace / 'home'
+        self.home.mkdir()
+        # Create empty configuration file for Plover.
         self.plover = self.venv / 'plover'
         self.plover.mkdir()
         (self.plover / 'plover.cfg').touch()
+        # Install dependencies.
+        deps = set()
+        def resolve_deps(dist):
+            if dist in deps:
+                return
+            deps.add(dist)
+            for req in dist.requires():
+                resolve_deps(pkg_resources.get_distribution(req))
+        resolve_deps(pkg_resources.get_distribution('plover_plugins_manager'))
+        resolve_deps(pkg_resources.get_distribution('PyQt5'))
+        for dist_name in sorted(dist.project_name for dist in deps):
+            self.clone_distribution(dist_name)
+        # Fixup pip so using a virtualenv is not an issue.
+        pip_locations = self.site_packages / 'pip' / 'locations.py'
+        patch_file(pip_locations, lambda s: s.replace(
+            '\ndef running_under_virtualenv():\n',
+            '\ndef running_under_virtualenv():'
+            '\n    return False\n',
+        ))
+        # Set plugins directory.
+        self.plugins_dir = self.pyeval(DALS(
+            '''
+            from plover.oslayer.config import PLUGINS_DIR
+            print(repr(PLUGINS_DIR))
+            '''
+        ))
 
     def _chmod_venv(self, add_mode, rm_mode):
         plover_path = self.plover.abspath()
@@ -79,11 +124,14 @@ class VirtualEnv(object):
             clone(origin)
 
     def run(self, cmd, capture=False):
+        bindir = self.venv.abspath() / 'bin'
         env = dict(os.environ)
         env.update(dict(
-            VIRTUAL_ENV=self.venv.abspath(),
-            PATH=os.pathsep.join((self.venv.realpath() / 'bin', env['PATH'])),
+            HOME=str(self.home.abspath()),
+            VIRTUAL_ENV=str(self.venv.abspath()),
+            PATH=os.pathsep.join((bindir, env['PATH'])),
         ))
+        cmd[0] = bindir / cmd[0]
         return self.workspace.run(cmd, capture=capture, env=env,
                                   cwd=self.plover.abspath())
 
@@ -96,21 +144,33 @@ class VirtualEnv(object):
     def pyeval(self, script):
         return ast.literal_eval(self.pyexec(script, capture=True))
 
+    def install_plugins(self, args):
+        return self.pyrun('-m plover_plugins_manager install'.split() + args)
+
+    def uninstall_plugins(self, args):
+        return self.pyrun('-m plover_plugins_manager uninstall -y'.split() + args)
+
+    def list_distributions(self, directory):
+        return [
+            str(d.as_requirement())
+            for d in pkg_resources.find_distributions(directory)
+        ]
+
+    def list_all_plugins(self):
+        return set(self.pyrun('-m plover_plugins_manager '
+                              'list_plugins --freeze'.split(),
+                              capture=True).strip().split('\n'))
+
+    def list_user_plugins(self):
+        return {
+            str(d.as_requirement())
+            for d in pkg_resources.find_distributions(self.plugins_dir)
+        }
+
 
 @pytest.fixture
 def virtualenv(workspace):
     virtualenv = VirtualEnv(workspace)
-    deps = set()
-    def resolve_deps(dist):
-        if dist in deps:
-            return
-        deps.add(dist)
-        for req in dist.requires():
-            resolve_deps(pkg_resources.get_distribution(req))
-    resolve_deps(pkg_resources.get_distribution('plover_plugins_manager'))
-    resolve_deps(pkg_resources.get_distribution('PyQt5'))
-    for dist_name in sorted(dist.project_name for dist in deps):
-        virtualenv.clone_distribution(dist_name)
     virtualenv.freeze()
     yield virtualenv
     virtualenv.thaw()
@@ -119,51 +179,56 @@ def virtualenv(workspace):
     virtualenv.workspace.teardown()
 
 
-def list_plugins_dir_dists(virtualenv):
-    return virtualenv.pyeval(
-        '''
-        from pkg_resources import find_distributions
-        from plover.oslayer.config import PLUGINS_DIR
-        print(repr([str(d.as_requirement())
-        for d in find_distributions(PLUGINS_DIR)]))
-        '''
-    )
-
-def install_plugins(virtualenv, args):
-    return virtualenv.pyrun('-m plover_plugins_manager install'.split() + args)
-
-def uninstall_plugins(virtualenv, args):
-    return virtualenv.pyrun('-m plover_plugins_manager uninstall -y'.split() + args)
-
-
 def test_list_plugins(virtualenv):
-    assert virtualenv.pyrun('-m plover_plugins_manager '
-                            'list_plugins --freeze'.split(),
-                            capture=True) == DALS(
-                                '''
-                                %s
-                                ''' % MANAGER_DIST)
+    assert virtualenv.list_all_plugins() == {MANAGER_DIST}
+    assert virtualenv.list_user_plugins() == set()
 
 def test_sdist_install(virtualenv):
-    install_plugins(virtualenv, [TEST_SDIST_0_1_0])
-    assert list_plugins_dir_dists(virtualenv) == [TEST_DIST_0_1_0]
-    uninstall_plugins(virtualenv, ['plover-template-system'])
-    assert list_plugins_dir_dists(virtualenv) == []
+    virtualenv.install_plugins([TEST_SDIST_0_1_0])
+    assert virtualenv.list_user_plugins() == {TEST_DIST_0_1_0}
+    virtualenv.uninstall_plugins([TEST_DIST])
+    assert virtualenv.list_user_plugins() == set()
 
 def test_wheel_install(virtualenv):
-    install_plugins(virtualenv, [TEST_WHEEL_0_1_0])
-    assert list_plugins_dir_dists(virtualenv) == [TEST_DIST_0_1_0]
-    uninstall_plugins(virtualenv, ['plover-template-system'])
-    assert list_plugins_dir_dists(virtualenv) == []
+    virtualenv.install_plugins([TEST_WHEEL_0_1_0])
+    assert virtualenv.list_user_plugins() == {TEST_DIST_0_1_0}
+    virtualenv.uninstall_plugins([TEST_DIST])
+    assert virtualenv.list_user_plugins() == set()
 
 def test_plugin_update(virtualenv):
-    install_plugins(virtualenv, [TEST_WHEEL_0_1_0])
-    assert list_plugins_dir_dists(virtualenv) == [TEST_DIST_0_1_0]
-    install_plugins(virtualenv, [TEST_WHEEL_0_2_0])
-    assert list_plugins_dir_dists(virtualenv) == [TEST_DIST_0_2_0]
+    virtualenv.install_plugins([TEST_WHEEL_0_1_0])
+    assert virtualenv.list_user_plugins() == {TEST_DIST_0_1_0}
+    virtualenv.install_plugins([TEST_WHEEL_0_2_0])
+    assert virtualenv.list_user_plugins() == {TEST_DIST_0_2_0}
 
 def test_plugin_downgrade(virtualenv):
-    install_plugins(virtualenv, [TEST_WHEEL_0_2_0])
-    assert list_plugins_dir_dists(virtualenv) == [TEST_DIST_0_2_0]
-    install_plugins(virtualenv, [TEST_WHEEL_0_1_0])
-    assert list_plugins_dir_dists(virtualenv) == [TEST_DIST_0_1_0]
+    virtualenv.install_plugins([TEST_WHEEL_0_2_0])
+    assert virtualenv.list_user_plugins() == {TEST_DIST_0_2_0}
+    virtualenv.install_plugins([TEST_WHEEL_0_1_0])
+    assert virtualenv.list_user_plugins() == {TEST_DIST_0_1_0}
+
+def test_system_plugin_update(virtualenv):
+    virtualenv.thaw()
+    virtualenv.run('python -m pip install'.split() + [TEST_WHEEL_0_1_0])
+    virtualenv.freeze()
+    assert virtualenv.list_all_plugins() == {MANAGER_DIST, TEST_DIST_0_1_0}
+    assert virtualenv.list_user_plugins() == set()
+    virtualenv.install_plugins([TEST_WHEEL_0_2_0])
+    assert virtualenv.list_all_plugins() == {MANAGER_DIST, TEST_DIST_0_2_0}
+    assert virtualenv.list_user_plugins() == {TEST_DIST_0_2_0}
+    virtualenv.uninstall_plugins([TEST_DIST])
+    assert virtualenv.list_all_plugins() == {MANAGER_DIST, TEST_DIST_0_1_0}
+    assert virtualenv.list_user_plugins() == set()
+
+def test_system_plugin_downgrade(virtualenv):
+    virtualenv.thaw()
+    virtualenv.run('python -m pip install'.split() + [TEST_WHEEL_0_2_0])
+    virtualenv.freeze()
+    assert virtualenv.list_all_plugins() == {MANAGER_DIST, TEST_DIST_0_2_0}
+    assert virtualenv.list_user_plugins() == set()
+    virtualenv.install_plugins([TEST_WHEEL_0_1_0])
+    assert virtualenv.list_all_plugins() == {MANAGER_DIST, TEST_DIST_0_1_0}
+    assert virtualenv.list_user_plugins() == {TEST_DIST_0_1_0}
+    virtualenv.uninstall_plugins([TEST_DIST])
+    assert virtualenv.list_all_plugins() == {MANAGER_DIST, TEST_DIST_0_2_0}
+    assert virtualenv.list_user_plugins() == set()

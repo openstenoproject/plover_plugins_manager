@@ -1,6 +1,8 @@
 
 import itertools
+import os
 import subprocess
+import site
 import sys
 import textwrap
 
@@ -38,23 +40,25 @@ def list_plugins(freeze=False):
 
 
 def pip(args, stdin=None, stdout=None, stderr=None):
-    cmd = [
-        sys.executable, '-c',
-        textwrap.dedent('''
-        import sys
-        sys.path.insert(0, sys.argv.pop(1))
-        from pkg_resources import load_entry_point
-        sys.exit(load_entry_point('pip', 'console_scripts', 'pip')())
-        '''),
-        PLUGINS_DIR,
-    ]
+    cmd = [sys.executable, '-m', 'pip']
+    env = dict(os.environ)
+    pypath = env.get('PYTHONPATH')
+    if pypath is None:
+        pypath = []
+    else:
+        pypath = pypath.split(os.pathsep)
+    if site.USER_SITE is not None:
+        pypath.insert(0, site.USER_SITE)
+    pypath.insert(0, PLUGINS_DIR)
+    env['PYTHONPATH'] = os.pathsep.join(pypath)
+    env['PYTHONUSERBASE'] = PLUGINS_BASE
     command = args.pop(0)
     if command == 'check':
         cmd.append('check')
     elif command == 'install':
         cmd.extend((
             'install',
-            '--prefix', PLUGINS_BASE,
+            '--user',
             '--upgrade-strategy=only-if-needed',
         ))
     elif command == 'uninstall':
@@ -67,7 +71,7 @@ def pip(args, stdin=None, stdout=None, stderr=None):
     else:
         raise ValueError('invalid command: %s' % command)
     cmd.extend(args)
-    return subprocess.Popen(cmd, stdin=stdin, stdout=stdout, stderr=stderr)
+    return subprocess.Popen(cmd, env=env, stdin=stdin, stdout=stdout, stderr=stderr)
 
 
 def main(args=None):
