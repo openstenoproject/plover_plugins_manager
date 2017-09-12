@@ -13,9 +13,9 @@ from plover_plugins_manager import local_registry
 def list_plugins(freeze=False):
     installed_plugins = local_registry.list_plugins()
     if freeze:
-        available_plugins = global_registry.list_plugins()
+        available_plugins = {}
     else:
-        available_plugins = []
+        available_plugins = global_registry.list_plugins()
     for name, installed, available in sorted(
         (name,
          installed_plugins.get(name, []),
