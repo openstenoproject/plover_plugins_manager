@@ -229,3 +229,18 @@ def test_system_plugin_downgrade(virtualenv):
     virtualenv.uninstall_plugins([TEST_DIST])
     assert virtualenv.list_all_plugins() == {MANAGER_DIST, TEST_DIST_0_2_0}
     assert virtualenv.list_user_plugins() == set()
+
+def test_real_user_site_is_ignored_when_disabled(virtualenv):
+    real_user_prefix, real_user_site = virtualenv.pyeval(DALS(
+        '''
+        import site
+        print(repr((site.USER_BASE, site.USER_SITE)))
+        '''
+    ))
+    virtualenv.run('python -m pip install --user'.split() + [TEST_WHEEL_0_1_0])
+    assert virtualenv.list_distributions(real_user_site) == {TEST_DIST_0_1_0}
+    assert virtualenv.list_all_plugins() == {MANAGER_DIST}
+    assert virtualenv.list_user_plugins() == set()
+    virtualenv.install_plugins([TEST_WHEEL_0_1_0])
+    assert virtualenv.list_all_plugins() == {MANAGER_DIST, TEST_DIST_0_1_0}
+    assert virtualenv.list_user_plugins() == {TEST_DIST_0_1_0}

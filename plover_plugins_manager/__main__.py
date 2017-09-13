@@ -47,7 +47,7 @@ def pip(args, stdin=None, stdout=None, stderr=None):
         pypath = []
     else:
         pypath = pypath.split(os.pathsep)
-    if site.USER_SITE is not None:
+    if site.ENABLE_USER_SITE:
         pypath.insert(0, site.USER_SITE)
     pypath.insert(0, PLUGINS_DIR)
     env['PYTHONPATH'] = os.pathsep.join(pypath)
