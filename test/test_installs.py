@@ -151,10 +151,10 @@ class VirtualEnv(object):
         return self.pyrun('-m plover_plugins_manager uninstall -y'.split() + args)
 
     def list_distributions(self, directory):
-        return [
+        return {
             str(d.as_requirement())
             for d in pkg_resources.find_distributions(directory)
-        ]
+        }
 
     def list_all_plugins(self):
         return set(self.pyrun('-m plover_plugins_manager '
@@ -162,10 +162,7 @@ class VirtualEnv(object):
                               capture=True).strip().split('\n'))
 
     def list_user_plugins(self):
-        return {
-            str(d.as_requirement())
-            for d in pkg_resources.find_distributions(self.plugins_dir)
-        }
+        return self.list_distributions(self.plugins_dir)
 
 
 @pytest.fixture
