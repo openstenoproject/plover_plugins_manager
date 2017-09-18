@@ -19,5 +19,3 @@ cmdclass = {
 }
 
 setup(cmdclass=cmdclass)
-
-# vim: foldmethod=marker
