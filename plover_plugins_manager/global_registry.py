@@ -5,7 +5,7 @@ import os
 
 from six.moves import xmlrpc_client
 
-from pkg_resources import parse_version
+from pkg_resources import parse_version, safe_name
 from pip.download import PipSession, PipXmlrpcTransport
 from pip.models import PyPI
 
@@ -15,7 +15,7 @@ from plover_plugins_manager.plugin_metadata import PluginMetadata
 
 
 CACHE_FILE = os.path.join(CONFIG_DIR, '.cache', 'plugins.json')
-CACHE_VERSION = 1
+CACHE_VERSION = 2
 
 
 def load_cache():
@@ -64,7 +64,7 @@ def list_plugins():
         ])
         assert name == plugin_metadata.name
         assert version == plugin_metadata.version
-        plugins[plugin_metadata.name].append(plugin_metadata)
+        plugins[safe_name(name)].append(plugin_metadata)
     plugins = {
         name: list(sorted(versions))
         for name, versions in plugins.items()

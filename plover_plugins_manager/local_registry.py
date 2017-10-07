@@ -58,7 +58,7 @@ def list_plugins():
             metadata_dict.get(k, '')
             for k in PluginMetadata._fields
         ])
-        plugins[plugin_metadata.name].append(plugin_metadata)
+        plugins[dist.key].append(plugin_metadata)
     return {
         name: list(sorted(versions))
         for name, versions in plugins.items()
