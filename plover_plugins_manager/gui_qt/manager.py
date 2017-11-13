@@ -11,6 +11,7 @@ from docutils.core import publish_parts
 from PyQt5.QtCore import Qt, QUrl
 from PyQt5.QtWidgets import QDialog, QTableWidgetItem
 
+from plover import log
 from plover.gui_qt.tool import Tool
 
 from plover_plugins_manager.gui_qt.manager_ui import Ui_PluginsManager
@@ -76,7 +77,12 @@ class PluginsManager(Tool, Ui_PluginsManager):
 
     def _update_packages(self):
         installed_plugins = local_registry.list_plugins()
-        available_plugins = global_registry.list_plugins()
+        try:
+            available_plugins = global_registry.list_plugins()
+        except:
+            log.error("failed to fetch list of available plugins from PyPI",
+                      exc_info=True)
+            available_plugins = {}
         for name, installed, available in sorted(
             (name,
              installed_plugins.get(name, []),
