@@ -1,5 +1,6 @@
 
 from collections import defaultdict
+from datetime import datetime
 import json
 import os
 
@@ -15,7 +16,7 @@ from plover_plugins_manager.plugin_metadata import PluginMetadata
 
 
 CACHE_FILE = os.path.join(CONFIG_DIR, '.cache', 'plugins.json')
-CACHE_VERSION = 2
+CACHE_VERSION = 3
 
 
 def load_cache():
@@ -40,9 +41,8 @@ def list_plugins():
     transport = PipXmlrpcTransport(index_url, session)
     pypi = xmlrpc_client.ServerProxy(index_url, transport)
     cache = load_cache()
-    last_serial = pypi.changelog_last_serial()
     if cache.get('version') == CACHE_VERSION and \
-       cache.get('last_serial') == last_serial:
+       (cache.get('timestamp', 0.0) + 600.0) >= datetime.utcnow().timestamp():
         plugins = {
             name: [PluginMetadata(*[
                 v.get(k, '')
@@ -69,7 +69,8 @@ def list_plugins():
         name: list(sorted(versions))
         for name, versions in plugins.items()
     }
-    save_cache(version=CACHE_VERSION, last_serial=last_serial,
+    save_cache(version=CACHE_VERSION,
+               timestamp=datetime.utcnow().timestamp(),
                plugins={
                    name: [v.to_dict() for v in versions]
                    for name, versions in plugins.items()
