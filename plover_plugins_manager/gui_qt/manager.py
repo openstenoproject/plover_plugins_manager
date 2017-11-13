@@ -1,22 +1,20 @@
 
-from collections import OrderedDict, namedtuple
+from threading import Thread
 import atexit
 import cgi
-import itertools
 import os
 import sys
 
 from docutils.core import publish_parts
 
-from PyQt5.QtCore import Qt, QUrl
+from PyQt5.QtCore import Qt, QUrl, pyqtSignal
 from PyQt5.QtWidgets import QDialog, QTableWidgetItem
 
-from plover import log
 from plover.gui_qt.tool import Tool
 
 from plover_plugins_manager.gui_qt.manager_ui import Ui_PluginsManager
 from plover_plugins_manager.gui_qt.run_dialog import RunDialog
-from plover_plugins_manager import global_registry, local_registry
+from plover_plugins_manager.registry import Registry
 from plover_plugins_manager.__main__ import pip
 
 
@@ -31,89 +29,47 @@ class PluginsManager(Tool, Ui_PluginsManager):
     ROLE = 'plugins_manager'
     ICON = ':/plugins_manager/icon.svg'
 
-    class PackageState(object):
-
-        def __init__(self, status, name, current, latest):
-            self.status = status
-            self.name = name
-            self.current = current
-            self.latest = latest
-
-        @property
-        def metadata(self):
-            return self.current or self.latest
-
-        def __getitem__(self, key):
-            if key == 'name':
-                return self.name
-            if key == 'status':
-                return self.status
-            m = self.metadata
-            if m:
-                return getattr(m, key)
-            return ''
-
-
     # We use a class instance so the state is persistent
     # accross different executions of the dialog when
     # the user does not restart.
-    _packages = OrderedDict()
+    _packages = None
+    _packages_updated = pyqtSignal()
 
     def __init__(self, engine):
         super(PluginsManager, self).__init__(engine)
         self.setupUi(self)
         self._engine = engine
         self.table.sortByColumn(1, Qt.AscendingOrder)
-        if not self._packages:
-            self._update_packages()
-        for state in self._packages.values():
-            if state.status in ('updated', 'removed'):
-                need_restart = True
-                break
-        else:
-            need_restart = False
-        self.restart_button.setEnabled(need_restart)
-        self._update_table()
+        self._packages_updated.connect(self._on_packages_updated)
+        if self._packages is None:
+            self.__class__._packages = Registry()
+        self._on_packages_updated()
+        self.on_refresh()
 
-    def _update_packages(self):
-        installed_plugins = local_registry.list_plugins()
-        try:
-            available_plugins = global_registry.list_plugins()
-        except:
-            log.error("failed to fetch list of available plugins from PyPI",
-                      exc_info=True)
-            available_plugins = {}
-        for name, installed, available in sorted(
-            (name,
-             installed_plugins.get(name, []),
-             available_plugins.get(name, []))
-            for name in set(itertools.chain(installed_plugins,
-                                            available_plugins))
-        ):
-            current = installed[-1] if installed else None
-            latest = available[-1] if available else None
-            if current:
-                if latest and latest.parsed_version > current.parsed_version:
-                    status = 'outdated'
-                else:
-                    status = 'installed'
-            else:
-                status = ''
-            self._packages[name] = self.PackageState(status, name, current, latest)
+    def _need_restart(self):
+        for state in self._packages:
+            if state.status in ('removed', 'updated'):
+                return True
+        return False
+
+    def _on_packages_updated(self):
+        self.restart_button.setEnabled(self._need_restart())
+        self.progress.hide()
+        self.refresh_button.show()
+        self._update_table()
+        self.setEnabled(True)
 
     def _update_table(self):
-        self.table.setRowCount(0)
-        row = 0
-        for state in self._packages.values():
-            self.table.insertRow(row)
-            for column, field in enumerate('status name version summary'.split()):
-                item = QTableWidgetItem(state[field])
+        self.table.setCurrentItem(None)
+        self.table.setSortingEnabled(False)
+        self.table.setRowCount(len(self._packages))
+        for row, state in enumerate(self._packages):
+            for column, attr in enumerate('status name version summary'.split()):
+                item = QTableWidgetItem(getattr(state, attr))
                 item.setFlags(item.flags() & ~Qt.ItemIsEditable)
                 self.table.setItem(row, column, item)
-            row += 1
         self.table.resizeColumnsToContents()
-        self.uninstall_button.setEnabled(False)
-        self.install_button.setEnabled(False)
+        self.table.setSortingEnabled(True)
 
     def _get_state(self, row):
         name = self.table.item(row, 1).data(Qt.DisplayRole)
@@ -145,7 +101,7 @@ class PluginsManager(Tool, Ui_PluginsManager):
         can_install, can_uninstall = self._get_selection()
         self.uninstall_button.setEnabled(bool(can_uninstall))
         self.install_button.setEnabled(bool(can_install))
-        self.info.setUrl(QUrl(''))
+        self._clear_info()
         current_item = self.table.currentItem()
         if current_item is None:
             return
@@ -180,6 +136,20 @@ class PluginsManager(Tool, Ui_PluginsManager):
                 args.insert(0, sys.executable)
             os.execv(args[0], args)
 
+    def _update_packages(self):
+        self._packages.update()
+        self._packages_updated.emit()
+
+    def _clear_info(self):
+        self.info.setUrl(QUrl(''))
+
+    def on_refresh(self):
+        Thread(target=self._update_packages).start()
+        self._clear_info()
+        self.setEnabled(False)
+        self.refresh_button.hide()
+        self.progress.show()
+
     def on_install(self):
         packages = self._get_selection()[0]
         code = self._run(
@@ -191,7 +161,6 @@ class PluginsManager(Tool, Ui_PluginsManager):
             for name in packages:
                 state = self._packages[name]
                 state.current = state.latest
-                state.status = 'updated'
             self._update_table()
             self.restart_button.setEnabled(True)
 
@@ -202,7 +171,6 @@ class PluginsManager(Tool, Ui_PluginsManager):
             for name in packages:
                 state = self._packages[name]
                 state.current = None
-                state.status = 'removed'
             self._update_table()
             self.restart_button.setEnabled(True)
 
