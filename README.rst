@@ -4,6 +4,11 @@ Plover Plugin Manager
 Release history
 ---------------
 
+In development
+~~~~~~~~~~~~~~
+
+* fix #5: open all links externally
+
 0.5.9
 ~~~~~
 

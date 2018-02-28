@@ -8,6 +8,8 @@ import sys
 from docutils.core import publish_parts
 
 from PyQt5.QtCore import Qt, QUrl, pyqtSignal
+from PyQt5.QtGui import QDesktopServices
+from PyQt5.QtWebEngineWidgets import QWebEnginePage
 from PyQt5.QtWidgets import QDialog, QTableWidgetItem
 
 from plover.gui_qt.tool import Tool
@@ -21,6 +23,15 @@ from plover_plugins_manager.__main__ import pip
 def _rst_to_html(text):
     html = publish_parts(text, writer_name='s5_html')
     return html['stylesheet'], html['html_title'] + html['body']
+
+
+class InfoPage(QWebEnginePage):
+
+    def acceptNavigationRequest(self, url, navigation_type, is_main_frame):
+        if url.scheme() == "qrc":
+            return True
+        QDesktopServices.openUrl(url)
+        return False
 
 
 class PluginsManager(Tool, Ui_PluginsManager):
@@ -38,6 +49,8 @@ class PluginsManager(Tool, Ui_PluginsManager):
     def __init__(self, engine):
         super(PluginsManager, self).__init__(engine)
         self.setupUi(self)
+        self.info.setPage(InfoPage(self))
+        self.info.setContextMenuPolicy(Qt.NoContextMenu)
         self._engine = engine
         self.table.sortByColumn(1, Qt.AscendingOrder)
         self._packages_updated.connect(self._on_packages_updated)
