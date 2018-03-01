@@ -1,10 +1,9 @@
 
 from collections import defaultdict
 from datetime import datetime
+from xmlrpc.client import ServerProxy
 import json
 import os
-
-from six.moves import xmlrpc_client
 
 from pkg_resources import parse_version, safe_name
 from pip.download import PipSession, PipXmlrpcTransport
@@ -39,7 +38,7 @@ def list_plugins():
     index_url = 'https://pypi.python.org/pypi'
     # We use pip's session/transport to avoid SSL errors on Windows/macOS...
     transport = PipXmlrpcTransport(index_url, session)
-    pypi = xmlrpc_client.ServerProxy(index_url, transport)
+    pypi = ServerProxy(index_url, transport)
     cache = load_cache()
     if cache.get('version') == CACHE_VERSION and \
        (cache.get('timestamp', 0.0) + 600.0) >= datetime.utcnow().timestamp():

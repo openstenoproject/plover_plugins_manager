@@ -1,7 +1,7 @@
 
 from collections import defaultdict
+from io import StringIO
 
-from six import StringIO
 from pip._vendor.distlib.metadata import Metadata
 from pkg_resources import parse_version
 
