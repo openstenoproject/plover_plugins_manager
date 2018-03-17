@@ -3,7 +3,6 @@ from collections import defaultdict
 from io import StringIO
 
 from pip._vendor.distlib.metadata import Metadata
-from pkg_resources import parse_version
 
 from plover.registry import registry
 from plover_plugins_manager.plugin_metadata import PluginMetadata
