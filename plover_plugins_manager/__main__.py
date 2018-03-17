@@ -4,7 +4,6 @@ import os
 import subprocess
 import site
 import sys
-import textwrap
 
 from plover.oslayer.config import PLUGINS_BASE, PLUGINS_DIR
 
