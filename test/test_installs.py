@@ -135,20 +135,20 @@ class VirtualEnv(object):
         return self.workspace.run(cmd, capture=capture, env=env,
                                   cwd=self.plover.abspath())
 
-    def pyrun(self, args, capture=False):
-        return self.run(['python'] + args, capture=capture)
+    def pyrun(self, args, **kwargs):
+        return self.run(['python'] + args, **kwargs)
 
-    def pyexec(self, script, capture=False):
-        return self.pyrun(['-c', DALS(script)], capture=capture)
+    def pyexec(self, script, **kwargs):
+        return self.pyrun(['-c', DALS(script)], **kwargs)
 
-    def pyeval(self, script):
-        return ast.literal_eval(self.pyexec(script, capture=True))
+    def pyeval(self, script, **kwargs):
+        return ast.literal_eval(self.pyexec(script, capture=True, **kwargs))
 
-    def install_plugins(self, args):
-        return self.pyrun('-m plover_plugins_manager install'.split() + args)
+    def install_plugins(self, args, **kwargs):
+        return self.pyrun('-m plover_plugins_manager install'.split() + args, **kwargs)
 
-    def uninstall_plugins(self, args):
-        return self.pyrun('-m plover_plugins_manager uninstall -y'.split() + args)
+    def uninstall_plugins(self, args, **kwargs):
+        return self.pyrun('-m plover_plugins_manager uninstall -y'.split() + args, **kwargs)
 
     def list_distributions(self, directory):
         return {
