@@ -1,8 +1,10 @@
 
 from collections import defaultdict
 from io import StringIO
+import site
 
 from pip._vendor.distlib.metadata import Metadata
+from pkg_resources import WorkingSet
 
 from plover.registry import registry
 from plover_plugins_manager.plugin_metadata import PluginMetadata
@@ -17,11 +19,21 @@ def recursive_get(d, *fields):
     return v
 
 def list_plugins():
-    registry.update()
+    working_set = WorkingSet()
+    # Make sure user site packages are added
+    # to the set so user plugins are listed.
+    user_site_packages = site.USER_SITE
+    if user_site_packages not in working_set.entries:
+        working_set.add_entry(user_site_packages)
     plugins = defaultdict(list)
-    for dist in registry.list_distributions():
-        dist = dist.dist
-        if dist.project_name == 'plover':
+    for dist in working_set.by_key.values():
+        if dist.key == 'plover':
+            continue
+        is_plover_plugin = False
+        for entrypoint_type in dist.get_entry_map().keys():
+            if entrypoint_type.startswith('plover.'):
+                is_plover_plugin = True
+        if not is_plover_plugin:
             continue
         for metadata_entry in (
             'metadata.json',

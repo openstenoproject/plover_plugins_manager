@@ -5,8 +5,6 @@ import subprocess
 import site
 import sys
 
-from plover.oslayer.config import PLUGINS_BASE, PLUGINS_DIR
-
 from plover_plugins_manager import global_registry
 from plover_plugins_manager import local_registry
 
@@ -41,16 +39,16 @@ def list_plugins(freeze=False):
 def pip(args, stdin=None, stdout=None, stderr=None):
     cmd = [sys.executable, '-m', 'pip']
     env = dict(os.environ)
-    pypath = env.get('PYTHONPATH')
-    if pypath is None:
-        pypath = []
-    else:
-        pypath = pypath.split(os.pathsep)
-    if site.ENABLE_USER_SITE:
+    # Make sure user plugins are handled
+    # even if user site is not enabled.
+    if not site.ENABLE_USER_SITE:
+        pypath = env.get('PYTHONPATH')
+        if pypath is None:
+            pypath = []
+        else:
+            pypath = pypath.split(os.pathsep)
         pypath.insert(0, site.USER_SITE)
-    pypath.insert(0, PLUGINS_DIR)
-    env['PYTHONPATH'] = os.pathsep.join(pypath)
-    env['PYTHONUSERBASE'] = PLUGINS_BASE
+        env['PYTHONPATH'] = os.pathsep.join(pypath)
     command = args.pop(0)
     if command == 'check':
         cmd.append('check')

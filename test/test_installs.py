@@ -66,13 +66,13 @@ class VirtualEnv(object):
             '\ndef running_under_virtualenv():'
             '\n    return False\n',
         ))
-        # Set plugins directory.
-        self.plugins_dir = self.pyeval(DALS(
+        # Set user site packages directory.
+        self.user_site = Path(self.pyeval(DALS(
             '''
-            from plover.oslayer.config import PLUGINS_DIR
-            print(repr(PLUGINS_DIR))
+            import site
+            print(repr(site.USER_SITE))
             '''
-        ))
+        ), enable_user_site=False))
 
     def _chmod_venv(self, add_mode, rm_mode):
         plover_path = self.plover.abspath()
@@ -116,7 +116,7 @@ class VirtualEnv(object):
                 origin = origin.parent
             clone(origin)
 
-    def run(self, cmd, capture=False):
+    def run(self, cmd, capture=False, enable_user_site=True):
         bindir = self.venv.abspath() / 'bin'
         env = dict(os.environ)
         env.update(dict(
@@ -124,6 +124,8 @@ class VirtualEnv(object):
             VIRTUAL_ENV=str(self.venv.abspath()),
             PATH=os.pathsep.join((bindir, env['PATH'])),
         ))
+        if enable_user_site:
+            env['PYTHONPATH'] = str(self.user_site.abspath())
         cmd[0] = bindir / cmd[0]
         return self.workspace.run(cmd, capture=capture, env=env,
                                   cwd=self.plover.abspath())
@@ -155,7 +157,7 @@ class VirtualEnv(object):
                               capture=True).strip().split('\n'))
 
     def list_user_plugins(self):
-        return self.list_distributions(self.plugins_dir)
+        return self.list_distributions(self.user_site)
 
 
 @pytest.fixture
@@ -223,17 +225,18 @@ def test_system_plugin_downgrade(virtualenv):
     assert virtualenv.list_all_plugins() == {MANAGER_DIST, TEST_DIST_0_2_0}
     assert virtualenv.list_user_plugins() == set()
 
-def test_real_user_site_is_ignored_when_disabled(virtualenv):
+def test_with_user_site_disabled(virtualenv):
     real_user_prefix, real_user_site = virtualenv.pyeval(DALS(
         '''
         import site
         print(repr((site.USER_BASE, site.USER_SITE)))
         '''
     ))
-    virtualenv.run('python -m pip install --user'.split() + [TEST_WHEEL_0_1_0])
+    virtualenv.run('python -m pip install --user'.split() +
+                   [TEST_WHEEL_0_1_0], enable_user_site=False)
     assert virtualenv.list_distributions(real_user_site) == {TEST_DIST_0_1_0}
+    assert virtualenv.list_all_plugins() == {TEST_DIST_0_1_0, MANAGER_DIST}
+    assert virtualenv.list_user_plugins() == {TEST_DIST_0_1_0}
+    virtualenv.uninstall_plugins([TEST_DIST_0_1_0], enable_user_site=False)
     assert virtualenv.list_all_plugins() == {MANAGER_DIST}
     assert virtualenv.list_user_plugins() == set()
-    virtualenv.install_plugins([TEST_WHEEL_0_1_0])
-    assert virtualenv.list_all_plugins() == {MANAGER_DIST, TEST_DIST_0_1_0}
-    assert virtualenv.list_user_plugins() == {TEST_DIST_0_1_0}
