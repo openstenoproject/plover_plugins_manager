@@ -5,8 +5,8 @@ import importlib
 import os
 import stat
 import textwrap
+import venv
 
-from virtualenv import create_environment
 import pkg_resources
 import pytest
 
@@ -39,14 +39,7 @@ class VirtualEnv(object):
         self.workspace = workspace
         self.venv = workspace.workspace / 'venv'
         self.site_packages = Path(distutils.sysconfig.get_python_lib(prefix=self.venv))
-        create_environment(self.venv, no_setuptools=True, no_pip=True, no_wheel=True)
-        lib_dir = self.site_packages / '..'
-        (lib_dir / 'no-global-site-packages.txt').unlink()
-        # Disable user' site.
-        patch_file(lib_dir / 'site.py', lambda s: s.replace(
-            '\nENABLE_USER_SITE = None\n',
-            '\nENABLE_USER_SITE = False\n',
-        ))
+        venv.create(self.venv, with_pip=False)
         # Create fake home directory.
         self.home = self.workspace.workspace / 'home'
         self.home.mkdir()
