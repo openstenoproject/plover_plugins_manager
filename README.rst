@@ -4,6 +4,12 @@ Plover Plugin Manager
 Release history
 ---------------
 
+In development
+~~~~~~~~~~~~~~
+
+* plugins are now handled even if they can't be loaded by Plover
+  (so it's possible to update/uninstall broken plugins)
+
 0.5.10
 ~~~~~~
 
