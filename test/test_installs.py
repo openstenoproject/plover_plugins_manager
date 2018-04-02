@@ -35,7 +35,7 @@ def patch_file(filename, patch):
 
 class VirtualEnv(object):
 
-    def __init__(self, workspace, use_venv=False):
+    def __init__(self, workspace):
         self.workspace = workspace
         self.venv = workspace.workspace / 'venv'
         self.site_packages = Path(distutils.sysconfig.get_python_lib(prefix=self.venv))
