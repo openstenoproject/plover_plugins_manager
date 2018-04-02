@@ -4,7 +4,7 @@ from io import StringIO
 import site
 
 from pip._vendor.distlib.metadata import Metadata
-from pkg_resources import WorkingSet
+from pkg_resources import WorkingSet, find_distributions
 
 from plover.registry import registry
 from plover_plugins_manager.plugin_metadata import PluginMetadata
@@ -24,7 +24,10 @@ def list_plugins():
     # to the set so user plugins are listed.
     user_site_packages = site.USER_SITE
     if user_site_packages not in working_set.entries:
-        working_set.add_entry(user_site_packages)
+        working_set.entry_keys.setdefault(user_site_packages, [])
+        working_set.entries.append(user_site_packages)
+        for dist in find_distributions(user_site_packages, only=True):
+            working_set.add(dist, user_site_packages, replace=True)
     plugins = defaultdict(list)
     for dist in working_set.by_key.values():
         if dist.key == 'plover':

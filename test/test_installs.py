@@ -151,10 +151,10 @@ class VirtualEnv(object):
             for d in pkg_resources.find_distributions(directory)
         }
 
-    def list_all_plugins(self):
+    def list_all_plugins(self, **kwargs):
         return set(self.pyrun('-m plover_plugins_manager '
                               'list_plugins --freeze'.split(),
-                              capture=True).strip().split('\n'))
+                              capture=True, **kwargs).strip().split('\n'))
 
     def list_user_plugins(self):
         return self.list_distributions(self.user_site)
@@ -212,17 +212,18 @@ def test_system_plugin_update(virtualenv):
     assert virtualenv.list_all_plugins() == {MANAGER_DIST, TEST_DIST_0_1_0}
     assert virtualenv.list_user_plugins() == set()
 
-def test_system_plugin_downgrade(virtualenv):
+@pytest.mark.parametrize('enable_user_site', (True, False))
+def test_system_plugin_downgrade(virtualenv, enable_user_site):
     virtualenv.thaw()
-    virtualenv.run('python -m pip install'.split() + [TEST_WHEEL_0_2_0])
+    virtualenv.run('python -m pip install'.split() + [TEST_WHEEL_0_2_0], enable_user_site=enable_user_site)
     virtualenv.freeze()
-    assert virtualenv.list_all_plugins() == {MANAGER_DIST, TEST_DIST_0_2_0}
+    assert virtualenv.list_all_plugins(enable_user_site=enable_user_site) == {MANAGER_DIST, TEST_DIST_0_2_0}
     assert virtualenv.list_user_plugins() == set()
-    virtualenv.install_plugins([TEST_WHEEL_0_1_0])
-    assert virtualenv.list_all_plugins() == {MANAGER_DIST, TEST_DIST_0_1_0}
+    virtualenv.install_plugins([TEST_WHEEL_0_1_0], enable_user_site=enable_user_site)
+    assert virtualenv.list_all_plugins(enable_user_site=enable_user_site) == {MANAGER_DIST, TEST_DIST_0_1_0}
     assert virtualenv.list_user_plugins() == {TEST_DIST_0_1_0}
-    virtualenv.uninstall_plugins([TEST_DIST])
-    assert virtualenv.list_all_plugins() == {MANAGER_DIST, TEST_DIST_0_2_0}
+    virtualenv.uninstall_plugins([TEST_DIST], enable_user_site=enable_user_site)
+    assert virtualenv.list_all_plugins(enable_user_site=enable_user_site) == {MANAGER_DIST, TEST_DIST_0_2_0}
     assert virtualenv.list_user_plugins() == set()
 
 def test_with_user_site_disabled(virtualenv):
@@ -235,8 +236,8 @@ def test_with_user_site_disabled(virtualenv):
     virtualenv.run('python -m pip install --user'.split() +
                    [TEST_WHEEL_0_1_0], enable_user_site=False)
     assert virtualenv.list_distributions(real_user_site) == {TEST_DIST_0_1_0}
-    assert virtualenv.list_all_plugins() == {TEST_DIST_0_1_0, MANAGER_DIST}
+    assert virtualenv.list_all_plugins(enable_user_site=False) == {TEST_DIST_0_1_0, MANAGER_DIST}
     assert virtualenv.list_user_plugins() == {TEST_DIST_0_1_0}
     virtualenv.uninstall_plugins([TEST_DIST_0_1_0], enable_user_site=False)
-    assert virtualenv.list_all_plugins() == {MANAGER_DIST}
+    assert virtualenv.list_all_plugins(enable_user_site=False) == {MANAGER_DIST}
     assert virtualenv.list_user_plugins() == set()
