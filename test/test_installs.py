@@ -1,6 +1,6 @@
+from distutils import sysconfig
 from path import Path
 import ast
-import distutils
 import importlib
 import os
 import stat
@@ -38,7 +38,7 @@ class VirtualEnv(object):
     def __init__(self, workspace):
         self.workspace = workspace
         self.venv = workspace.workspace / 'venv'
-        self.site_packages = Path(distutils.sysconfig.get_python_lib(prefix=self.venv))
+        self.site_packages = Path(sysconfig.get_python_lib(prefix=self.venv))
         venv.create(self.venv, with_pip=False)
         # Create fake home directory.
         self.home = self.workspace.workspace / 'home'
