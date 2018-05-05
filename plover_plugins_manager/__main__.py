@@ -37,7 +37,7 @@ def list_plugins(freeze=False):
 
 
 def pip(args, stdin=None, stdout=None, stderr=None):
-    cmd = [sys.executable, '-m', 'pip']
+    cmd = [sys.executable, '-m', 'pip', '--disable-pip-version-check']
     env = dict(os.environ)
     # Make sure user plugins are handled
     # even if user site is not enabled.
