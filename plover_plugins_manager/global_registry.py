@@ -6,8 +6,10 @@ import json
 import os
 
 from pkg_resources import parse_version, safe_name
-from pip.download import PipSession, PipXmlrpcTransport
-from pip.models import PyPI
+try:
+    import pip._internal as pip_internal
+except ImportError:
+    import pip as pip_internal
 
 from plover.oslayer.config import CONFIG_DIR
 
@@ -33,10 +35,10 @@ def save_cache(**kwargs):
 
 
 def list_plugins():
-    session = PipSession()
-    index_url = PyPI.pypi_url
+    session = pip_internal.download.PipSession()
+    index_url = pip_internal.models.PyPI.pypi_url
     # We use pip's session/transport to avoid SSL errors on Windows/macOS...
-    transport = PipXmlrpcTransport(index_url, session)
+    transport = pip_internal.download.PipXmlrpcTransport(index_url, session)
     pypi = ServerProxy(index_url, transport)
     cache = load_cache()
     if cache.get('version') == CACHE_VERSION and \

@@ -60,7 +60,7 @@ class VirtualEnv(object):
         for dist_name in sorted(dist.project_name for dist in deps):
             self.clone_distribution(dist_name)
         # Fixup pip so using a virtualenv is not an issue.
-        pip_locations = self.site_packages / 'pip' / 'locations.py'
+        pip_locations = self.site_packages / 'pip' / '_internal' / 'locations.py'
         patch_file(pip_locations, lambda s: s.replace(
             '\ndef running_under_virtualenv():\n',
             '\ndef running_under_virtualenv():'
