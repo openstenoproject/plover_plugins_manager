@@ -4,6 +4,15 @@ Plover Plugin Manager
 Release history
 ---------------
 
+0.5.12
+~~~~~~
+
+* improve handling of plugins when user site is disabled: always list the
+  version for the user installed plugin (even if it's older than the system
+  package version and user site packages are disabled)
+* disable pip version check
+* add support for pip>=10.0
+
 0.5.11
 ~~~~~~
 
