@@ -8,6 +8,7 @@ In development
 ~~~~~~~~~~~~~~
 
 * add support for pip>=18.0
+* add support for PyQt5>=5.11
 
 0.5.12
 ~~~~~~

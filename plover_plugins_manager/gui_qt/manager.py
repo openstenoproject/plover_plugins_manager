@@ -28,6 +28,8 @@ def _rst_to_html(text):
 class InfoPage(QWebEnginePage):
 
     def acceptNavigationRequest(self, url, navigation_type, is_main_frame):
+        if navigation_type == QWebEnginePage.NavigationTypeTyped:
+            return True
         if url.scheme() == "qrc":
             return True
         QDesktopServices.openUrl(url)
@@ -154,7 +156,7 @@ class PluginsManager(Tool, Ui_PluginsManager):
         self._packages_updated.emit()
 
     def _clear_info(self):
-        self.info.setUrl(QUrl(''))
+        self.info.setHtml('')
 
     def on_refresh(self):
         Thread(target=self._update_packages).start()
