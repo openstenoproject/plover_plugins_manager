@@ -111,7 +111,10 @@ class VirtualEnv(object):
         src_location = Path(src_dist.location)
         modules = list(src_dist._get_metadata('top_level.txt'))
         for modname in modules or (dist_name,):
-            origin = Path(importlib.util.find_spec(modname).origin)
+            spec = importlib.util.find_spec(modname)
+            if spec is None:
+                continue
+            origin = Path(spec.origin)
             if origin.name == '__init__.py':
                 origin = origin.parent
             clone(origin)
