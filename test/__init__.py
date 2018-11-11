@@ -123,7 +123,7 @@ class VirtualEnv(object):
                                   cwd=self.plover.abspath())
 
     def pyrun(self, args, **kwargs):
-        return self.run(['python'] + args, **kwargs)
+        return self.run(['python'] + list(args), **kwargs)
 
     def pyexec(self, script, **kwargs):
         return self.pyrun(['-c', DALS(script)], **kwargs)

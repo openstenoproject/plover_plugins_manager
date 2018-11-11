@@ -19,6 +19,11 @@ from plover_plugins_manager.plugin_metadata import PluginMetadata
 CACHE_FILE = os.path.join(CONFIG_DIR, '.cache', 'plugins.json')
 CACHE_VERSION = 3
 
+if hasattr(pip_internal.models, 'PyPI'):
+    PYPI_URL = pip_internal.models.PyPI.pypi_url
+else:
+    PYPI_URL = pip_internal.download.PyPI.pypi_url
+
 
 def load_cache():
     if not os.path.exists(CACHE_FILE):
@@ -36,10 +41,9 @@ def save_cache(**kwargs):
 
 def list_plugins():
     session = pip_internal.download.PipSession()
-    index_url = pip_internal.models.PyPI.pypi_url
     # We use pip's session/transport to avoid SSL errors on Windows/macOS...
-    transport = pip_internal.download.PipXmlrpcTransport(index_url, session)
-    pypi = ServerProxy(index_url, transport)
+    transport = pip_internal.download.PipXmlrpcTransport(PYPI_URL, session)
+    pypi = ServerProxy(PYPI_URL, transport)
     cache = load_cache()
     if cache.get('version') == CACHE_VERSION and \
        (cache.get('timestamp', 0.0) + 600.0) >= datetime.utcnow().timestamp():
