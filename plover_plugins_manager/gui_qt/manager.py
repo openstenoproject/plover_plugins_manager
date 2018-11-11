@@ -5,8 +5,6 @@ import cgi
 import os
 import sys
 
-from docutils.core import publish_parts
-
 from PyQt5.QtCore import Qt, QUrl, pyqtSignal
 from PyQt5.QtGui import QDesktopServices
 from PyQt5.QtWebEngineWidgets import QWebEnginePage
@@ -17,12 +15,8 @@ from plover.gui_qt.tool import Tool
 from plover_plugins_manager.gui_qt.manager_ui import Ui_PluginsManager
 from plover_plugins_manager.gui_qt.run_dialog import RunDialog
 from plover_plugins_manager.registry import Registry
+from plover_plugins_manager.utils import description_to_html
 from plover_plugins_manager.__main__ import pip
-
-
-def _rst_to_html(text):
-    html = publish_parts(text, writer_name='s5_html')
-    return html['stylesheet'], html['html_title'] + html['body']
 
 
 class InfoPage(QWebEnginePage):
@@ -138,7 +132,13 @@ class PluginsManager(Tool, Ui_PluginsManager):
                 cgi.escape(metadata.home_page),
             )
         prologue += '<hr>'
-        css, description = _rst_to_html(metadata.description or metadata.summary)
+        if metadata.description:
+            description = metadata.description
+            description_content_type = metadata.description_content_type
+        else:
+            description = metadata.summary
+            description_content_type = None
+        css, description = description_to_html(description, description_content_type)
         self.info.setHtml(css + prologue + description)
 
     def on_restart(self):

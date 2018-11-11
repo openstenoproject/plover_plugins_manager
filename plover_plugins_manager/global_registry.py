@@ -17,7 +17,7 @@ from plover_plugins_manager.plugin_metadata import PluginMetadata
 
 
 CACHE_FILE = os.path.join(CONFIG_DIR, '.cache', 'plugins.json')
-CACHE_VERSION = 3
+CACHE_VERSION = 4
 
 if hasattr(pip_internal.models, 'PyPI'):
     PYPI_URL = pip_internal.models.PyPI.pypi_url
@@ -56,12 +56,13 @@ def list_plugins():
         }
         return plugins
     plugins = defaultdict(list)
-    for match in pypi.search({'keywords': 'plover_plugin'}):
+    for match in list(pypi.search({'keywords': 'plover_plugin'})):
         name, version = match['name'], match['version']
-        metadata_dict = pypi.release_data(name, version)
+        resp = session.get('%s/%s/%s/json' % (PYPI_URL, name, version))
         # Can happen if a package has been deleted.
-        if not metadata_dict:
+        if resp.status_code != 200:
             continue
+        metadata_dict = resp.json()['info']
         plugin_metadata = PluginMetadata(*[
             metadata_dict.get(k, '')
             for k in PluginMetadata._fields

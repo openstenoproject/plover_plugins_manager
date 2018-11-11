@@ -10,6 +10,7 @@ class PluginMetadata(namedtuple('PluginMetadata', '''
                                 author
                                 author_email
                                 description
+                                description_content_type
                                 home_page
                                 keywords
                                 license
