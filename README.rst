@@ -4,8 +4,8 @@ Plover Plugin Manager
 Release history
 ---------------
 
-In development
-~~~~~~~~~~~~~~
+0.5.13
+~~~~~~
 
 * add support for pip>=18.0
 * add support for PyQt5>=5.11
