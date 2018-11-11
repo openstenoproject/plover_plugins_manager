@@ -1,11 +1,11 @@
-path.py==10.3.1
-pip==10.0.1
-plover[gui_qt]==4.0.0.dev8
-pytest-shutil==1.3.0
-pytest-sugar==0.9.1
-pytest-xdist==1.22.2
-pytest==3.5.0
-setuptools==38.2.4
-setuptools-scm==1.15.6
+path.py
+pip
+plover[gui_qt]>=4.0.0.dev8
+pytest-shutil
+pytest-sugar
+pytest-xdist
+pytest
+setuptools
+setuptools-scm
 
 # vim: ft=cfg commentstring=#\ %s list
