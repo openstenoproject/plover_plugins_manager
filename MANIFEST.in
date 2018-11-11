@@ -1,3 +1,5 @@
+# PEP 518.
+include pyproject.toml
 # Tests.
 recursive-include test *.py
 include test/plover_template_system-0.1.0-py2.py3-none-any.whl
