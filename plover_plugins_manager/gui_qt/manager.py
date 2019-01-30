@@ -1,7 +1,7 @@
 
 from threading import Thread
 import atexit
-import cgi
+import html
 import os
 import sys
 
@@ -118,18 +118,18 @@ class PluginsManager(Tool, Ui_PluginsManager):
         if metadata is None:
             return
         prologue = '<h1>%s (%s)</h1>' % (
-            cgi.escape(metadata.name),
-            cgi.escape(metadata.version),
+            html.escape(metadata.name),
+            html.escape(metadata.version),
         )
         if metadata.author and metadata.author_email:
             prologue += '<p><b>Author: </b><a href="mailto:%s">%s</a></p>' % (
-                cgi.escape(metadata.author_email),
-                cgi.escape(metadata.author),
+                html.escape(metadata.author_email),
+                html.escape(metadata.author),
             )
         if metadata.home_page:
             prologue += '<p><b>Home page: </b><a href="%s">%s</a></p>' % (
                 metadata.home_page,
-                cgi.escape(metadata.home_page),
+                html.escape(metadata.home_page),
             )
         prologue += '<hr>'
         if metadata.description:
