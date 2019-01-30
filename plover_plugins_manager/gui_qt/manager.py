@@ -45,6 +45,8 @@ class PluginsManager(Tool, Ui_PluginsManager):
     def __init__(self, engine):
         super(PluginsManager, self).__init__(engine)
         self.setupUi(self)
+        self.uninstall_button.setEnabled(False)
+        self.install_button.setEnabled(False)
         self.info.setPage(InfoPage(self))
         self.info.setContextMenuPolicy(Qt.NoContextMenu)
         self._engine = engine
