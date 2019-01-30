@@ -5,7 +5,7 @@ from xmlrpc.client import ServerProxy
 import json
 import os
 
-from pkg_resources import parse_version, safe_name
+from pkg_resources import safe_name
 try:
     import pip._internal as pip_internal
 except ImportError:
