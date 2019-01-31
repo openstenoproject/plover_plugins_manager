@@ -12,6 +12,7 @@ except ImportError:
     import pip as pip_internal
 
 from plover.oslayer.config import CONFIG_DIR
+from plover import log
 
 from plover_plugins_manager.plugin_metadata import PluginMetadata
 
@@ -26,17 +27,25 @@ else:
 
 
 def load_cache():
-    if not os.path.exists(CACHE_FILE):
-        return {}
-    with open(CACHE_FILE, 'r') as fp:
-        return json.load(fp)
+    try:
+        if os.path.exists(CACHE_FILE):
+            with open(CACHE_FILE, 'r') as fp:
+                return json.load(fp)
+    except:
+        log.error('loading `%s` cache failed',
+                  CACHE_FILE, exc_info=True)
+    return {}
 
 def save_cache(**kwargs):
     dirname = os.path.dirname(CACHE_FILE)
-    if not os.path.exists(dirname):
-        os.makedirs(dirname)
-    with open(CACHE_FILE, 'w') as fp:
-        json.dump(kwargs, fp, indent=2, sort_keys=True)
+    try:
+        if not os.path.exists(dirname):
+            os.makedirs(dirname)
+        with open(CACHE_FILE, 'w') as fp:
+            json.dump(kwargs, fp, indent=2, sort_keys=True)
+    except:
+        log.error('saving `%s` cache failed',
+                  CACHE_FILE, exc_info=True)
 
 
 def list_plugins():

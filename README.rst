@@ -4,6 +4,11 @@ Plover Plugin Manager
 Release history
 ---------------
 
+In development
+~~~~~~~~~~~~~~
+
+* improve cache handling: correctly handle a failure to load/save the cache
+
 0.5.13
 ~~~~~~
 
