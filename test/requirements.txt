@@ -3,8 +3,8 @@ pip
 plover[gui_qt]>=4.0.0.dev8
 pytest-shutil
 pytest-sugar
-pytest-xdist
-pytest
+pytest-xdist<1.28.0
+pytest<4.0.0
 setuptools
 setuptools-scm
 
