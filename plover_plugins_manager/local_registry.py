@@ -6,7 +6,6 @@ import site
 from pip._vendor.distlib.metadata import Metadata
 from pkg_resources import WorkingSet, find_distributions
 
-from plover.registry import registry
 from plover_plugins_manager.plugin_metadata import PluginMetadata
 
 
