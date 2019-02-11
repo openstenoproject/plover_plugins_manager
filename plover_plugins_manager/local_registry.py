@@ -31,11 +31,10 @@ def list_plugins():
     for dist in working_set.by_key.values():
         if dist.key == 'plover':
             continue
-        is_plover_plugin = False
         for entrypoint_type in dist.get_entry_map().keys():
             if entrypoint_type.startswith('plover.'):
-                is_plover_plugin = True
-        if not is_plover_plugin:
+                break
+        else:
             continue
         for metadata_entry in (
             'metadata.json',
