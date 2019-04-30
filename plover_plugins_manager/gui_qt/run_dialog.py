@@ -30,7 +30,7 @@ class RunDialog(QDialog, Ui_RunDialog):
         self.buttonBox.button(QDialogButtonBox.Cancel).setDisabled(True)
 
 
-if '__main__' == __name__:
+if __name__ == '__main__':
     import sys
     from PyQt5.QtWidgets import QApplication
     app = QApplication([])

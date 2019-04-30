@@ -84,7 +84,7 @@ class VirtualEnv(object):
     def thaw(self):
         self._chmod_venv(stat.S_IWUSR | stat.S_IWGRP | stat.S_IWOTH, 0)
 
-    def clone_distribution(self, dist_name, verbose=False):
+    def clone_distribution(self, dist_name):
         """
         Clone a distribution from the current
         environment to the virtual environment.
@@ -97,7 +97,6 @@ class VirtualEnv(object):
         # Copy distribution info.
         clone(Path(src_dist.egg_info))
         # Copy top-level modules.
-        src_location = Path(src_dist.location)
         modules = list(src_dist._get_metadata('top_level.txt'))
         for modname in modules or (dist_name,):
             spec = importlib.util.find_spec(modname)

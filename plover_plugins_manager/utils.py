@@ -26,6 +26,3 @@ def description_to_html(content, content_type):
     if rendered is None:
         rendered = readme_renderer.txt.render(content)
     return _CSS, rendered
-
-
-

@@ -5,10 +5,10 @@ from . import VirtualEnv
 
 @pytest.fixture
 def virtualenv(workspace):
-    virtualenv = VirtualEnv(workspace)
-    virtualenv.freeze()
-    yield virtualenv
-    virtualenv.thaw()
+    venv = VirtualEnv(workspace)
+    venv.freeze()
+    yield venv
+    venv.thaw()
     # Workaround workspace not cleaning itself as it should...
-    virtualenv.workspace.delete = True
-    virtualenv.workspace.teardown()
+    venv.workspace.delete = True
+    venv.workspace.teardown()

@@ -72,10 +72,10 @@ def test_system_plugin_downgrade(virtualenv, enable_user_site):
     assert virtualenv.list_user_plugins() == set()
 
 def test_with_user_site_disabled(virtualenv):
-    real_user_prefix, real_user_site = virtualenv.pyeval(DALS(
+    real_user_site = virtualenv.pyeval(DALS(
         '''
         import site
-        print(repr((site.USER_BASE, site.USER_SITE)))
+        print(repr(site.USER_SITE))
         '''
     ))
     virtualenv.run('python -m pip install --user'.split() +
