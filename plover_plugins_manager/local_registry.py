@@ -4,18 +4,14 @@ from io import StringIO
 import site
 
 from pip._vendor.distlib.metadata import Metadata
-from pkg_resources import WorkingSet, find_distributions
+from pkg_resources import (
+    DistInfoDistribution, EggInfoDistribution, WorkingSet, find_distributions
+)
 
 from plover_plugins_manager.plugin_metadata import PluginMetadata
 
+from plover import log
 
-def recursive_get(d, *fields):
-    v = d
-    for name in fields:
-        v = v.get(name)
-        if v is None:
-            break
-    return v
 
 def list_plugins():
     working_set = WorkingSet()
@@ -36,40 +32,19 @@ def list_plugins():
                 break
         else:
             continue
-        for metadata_entry in (
-            'metadata.json',
-            'METADATA',
-            'PKG-INFO',
-        ):
-            if dist.has_metadata(metadata_entry):
-                metadata_str = dist.get_metadata(metadata_entry)
-                dist_metadata = Metadata(fileobj=StringIO(metadata_str))
-                break
+        if isinstance(dist, DistInfoDistribution):
+            metadata_entry = 'METADATA'
+        elif isinstance(dist, EggInfoDistribution):
+            metadata_entry = 'PKG-INFO'
         else:
+            log.warning('ignoring distribution (unsupported type): %s [%s]', dist, dist.__class__)
             continue
-        metadata_dict = dist_metadata.todict()
-        details = recursive_get(dist_metadata.dictionary,
-                                'extensions', 'python.details')
-        if details is not None:
-            description_file = recursive_get(details,
-                                             'document_names',
-                                             'description')
-            if description_file is not None and \
-               dist.has_metadata(description_file):
-                metadata_dict['description'] = dist.get_metadata(description_file)
-            home_page = recursive_get(details,
-                                      'project_urls',
-                                      'Home')
-            if home_page is not None:
-                metadata_dict['home_page'] = home_page
-            for contact in details.get('contacts', []):
-                if contact['role'] == 'author':
-                    metadata_dict['author'] = contact['name']
-                    metadata_dict['author_email'] = contact['email']
-        plugin_metadata = PluginMetadata(*[
-            metadata_dict.get(k, '')
-            for k in PluginMetadata._fields
-        ])
+        if not dist.has_metadata(metadata_entry):
+            log.warning('ignoring distribution (missing metadata): %s', dist)
+            continue
+        metadata_str = dist.get_metadata(metadata_entry)
+        dist_metadata = Metadata(fileobj=StringIO(metadata_str))
+        plugin_metadata = PluginMetadata.from_dict(dist_metadata.todict())
         plugins[dist.key].append(plugin_metadata)
     return {
         name: list(sorted(versions))
