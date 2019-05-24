@@ -6,28 +6,16 @@ import os
 import sys
 
 from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtGui import QDesktopServices
-from PyQt5.QtWebEngineWidgets import QWebEnginePage
 from PyQt5.QtWidgets import QDialog, QTableWidgetItem
 
 from plover.gui_qt.tool import Tool
 
+from plover_plugins_manager.gui_qt.info_browser import InfoBrowser
 from plover_plugins_manager.gui_qt.manager_ui import Ui_PluginsManager
 from plover_plugins_manager.gui_qt.run_dialog import RunDialog
 from plover_plugins_manager.registry import Registry
 from plover_plugins_manager.utils import description_to_html
 from plover_plugins_manager.__main__ import pip
-
-
-class InfoPage(QWebEnginePage):
-
-    def acceptNavigationRequest(self, url, navigation_type, is_main_frame):
-        if navigation_type == QWebEnginePage.NavigationTypeTyped:
-            return True
-        if url.scheme() == "qrc":
-            return True
-        QDesktopServices.openUrl(url)
-        return False
 
 
 class PluginsManager(Tool, Ui_PluginsManager):
@@ -47,9 +35,9 @@ class PluginsManager(Tool, Ui_PluginsManager):
         self.setupUi(self)
         self.uninstall_button.setEnabled(False)
         self.install_button.setEnabled(False)
-        self.info.setPage(InfoPage(self))
-        self.info.setContextMenuPolicy(Qt.NoContextMenu)
         self._engine = engine
+        self.info = InfoBrowser()
+        self.info_frame.layout().addWidget(self.info)
         self.table.sortByColumn(1, Qt.AscendingOrder)
         self._packages_updated.connect(self._on_packages_updated)
         if self._packages is None:

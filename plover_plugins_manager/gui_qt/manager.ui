@@ -65,7 +65,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QFrame" name="frame_2">
+     <widget class="QFrame" name="info_frame">
       <property name="frameShape">
        <enum>QFrame::StyledPanel</enum>
       </property>
@@ -121,35 +121,12 @@
          </item>
         </layout>
        </item>
-       <item>
-        <widget class="QWebEngineView" name="info" native="true">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="readOnly" stdset="0">
-          <bool>true</bool>
-         </property>
-         <property name="openExternalLinks" stdset="0">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
       </layout>
      </widget>
     </widget>
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>QWebEngineView</class>
-   <extends>QWidget</extends>
-   <header>qwebengineview.h</header>
-  </customwidget>
- </customwidgets>
  <resources>
   <include location="resources/resources.qrc"/>
  </resources>
