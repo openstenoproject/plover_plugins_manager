@@ -90,7 +90,8 @@ class PluginsManager(Tool, Ui_PluginsManager):
                 can_install.append(state.name)
         return can_install, can_uninstall
 
-    def _run(self, args):
+    @staticmethod
+    def _run(args):
         dialog = RunDialog(args, popen=pip)
         code = dialog.exec_()
         # dialog.destroy()
