@@ -7,7 +7,10 @@ Release history
 In development
 ~~~~~~~~~~~~~~
 
-* improve cache handling: correctly handle a failure to load/save the cache
+* drop the use of pip's internal APIs
+* drop the dependency on PyQt5 WebEngine
+* improve and simplify cache handling: persistently cache all network
+  requests (with a 10 minutes expiration date)
 
 0.5.13
 ~~~~~~
