@@ -58,11 +58,20 @@ class Registry(object):
     def __len__(self):
         return len(self._packages)
 
+    def __contains__(self, name):
+        return name in self._packages
+
     def __getitem__(self, name):
         return self._packages[name]
 
     def __iter__(self):
         return iter(self._packages.values())
+
+    def keys(self):
+        return self._packages.keys()
+
+    def items(self):
+        return self._packages.items()
 
     def update(self):
         try:

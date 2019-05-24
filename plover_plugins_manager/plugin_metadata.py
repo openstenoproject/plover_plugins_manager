@@ -27,6 +27,14 @@ class PluginMetadata(namedtuple('PluginMetadata', '''
     def parsed_version(self):
         return parse_version(self.version)
 
+    @classmethod
+    def from_dict(cls, d):
+        return cls(*(d.get(k, '') for k in cls._fields))
+
+    @classmethod
+    def from_kwargs(cls, **kwargs):
+        return cls.from_dict(kwargs)
+
     def to_dict(self):
         return dict(zip(self._fields, self))
 
