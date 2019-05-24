@@ -44,20 +44,14 @@ def list_plugins():
     if cache.get('version') == CACHE_VERSION and \
        (cache.get('timestamp', 0.0) + 600.0) >= datetime.utcnow().timestamp():
         plugins = {
-            name: [PluginMetadata(*[
-                v.get(k, '')
-                for k in PluginMetadata._fields
-            ]) for v in versions]
+            name: [PluginMetadata.from_dict(v) for v in versions]
             for name, versions in cache.get('plugins', {}).items()
         }
         return plugins
     plugins = defaultdict(list)
     for release in find_plover_plugins_releases():
         release_info = release['info']
-        plugin_metadata = PluginMetadata(*[
-            release_info.get(k, '')
-            for k in PluginMetadata._fields
-        ])
+        plugin_metadata = PluginMetadata.from_dict(release_info)
         plugins[safe_name(plugin_metadata.name)].append(plugin_metadata)
     plugins = {
         name: list(sorted(versions))
