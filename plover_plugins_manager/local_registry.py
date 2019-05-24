@@ -3,7 +3,7 @@ from collections import defaultdict
 from io import StringIO
 import site
 
-from pip._vendor.distlib.metadata import Metadata
+from distlib.metadata import Metadata
 from pkg_resources import DistInfoDistribution, WorkingSet, find_distributions
 
 from plover_plugins_manager.plugin_metadata import PluginMetadata

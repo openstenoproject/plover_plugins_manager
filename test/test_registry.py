@@ -10,8 +10,8 @@ from plover_plugins_manager.plugin_metadata import PluginMetadata
 
 @pytest.fixture
 def fake_cache(tmpdir, monkeypatch):
-    cache = tmpdir.join('cache.json')
-    monkeypatch.setattr('plover_plugins_manager.global_registry.CACHE_FILE', str(cache))
+    cache = tmpdir.join('cache')
+    monkeypatch.setattr('plover_plugins_manager.requests.CACHE_NAME', str(cache))
     return cache
 
 @pytest.fixture
@@ -43,19 +43,6 @@ def fake_working_set(tmpdir, monkeypatch):
 def fake_env(fake_cache, fake_index, fake_working_set):
     pass
 
-
-def test_bad_cache(fake_cache, fake_env):
-    fake_cache.write('foobar')
-    r = Registry()
-    r.update()
-    assert len(r) == 3
-
-def test_readonly_cache(fake_cache, fake_env):
-    fake_cache.write('{}')
-    fake_cache.chmod(0o400)
-    r = Registry()
-    r.update()
-    assert len(r) == 3
 
 def test_fake_registry(fake_cache, fake_env):
     r = Registry()
