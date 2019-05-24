@@ -29,13 +29,14 @@ def fake_working_set(tmpdir, monkeypatch):
     tmp_prefix.mkdir()
     with tarfile.open('test/data/prefix.tar') as prefix:
         prefix.extractall(path=tmp_prefix)
+    new_path = list(map(str, tmp_prefix.listdir('*.egg'))) + [str(tmp_prefix)]
     pr_state = pkg_resources.__getstate__()
-    sys_path = sys.path[:]
+    old_path = sys.path[:]
     try:
-        sys.path[:] = [str(tmp_prefix)]
+        sys.path[:] = new_path
         yield
     finally:
-        sys.path[:] = sys_path
+        sys.path[:] = old_path
         pkg_resources.__setstate__(pr_state)
 
 @pytest.fixture
@@ -47,19 +48,19 @@ def test_bad_cache(fake_cache, fake_env):
     fake_cache.write('foobar')
     r = Registry()
     r.update()
-    assert len(r) == 2
+    assert len(r) == 3
 
 def test_readonly_cache(fake_cache, fake_env):
     fake_cache.write('{}')
     fake_cache.chmod(0o400)
     r = Registry()
     r.update()
-    assert len(r) == 2
+    assert len(r) == 3
 
-def test_registry(fake_cache, fake_env):
+def test_fake_registry(fake_cache, fake_env):
     r = Registry()
     r.update()
-    assert len(r) == 2
+    assert len(r) == 3
     local_egg_info = r['local-egg-info']
     assert local_egg_info.current == PluginMetadata.from_kwargs(
         author='Local Egg-info',
@@ -89,6 +90,23 @@ def test_registry(fake_cache, fake_env):
         name='local_dist_info',
         summary='Macro for Plover',
         version='1.0.0'
+    )
+    assert local_dist_info.available == []
+    assert local_dist_info.latest is None
+    assert local_dist_info.metadata is local_dist_info.current
+    # Local only, zipped egg distribution.
+    local_dist_info = r['zipped-egg-plugin']
+    assert local_dist_info.current == PluginMetadata.from_kwargs(
+        author='Foo Bar',
+        author_email='foo.bar@foobar.com',
+        description='Zipped egg plugin for Plover\n============================\n',
+        description_content_type='',
+        home_page='http://localhost',
+        keywords=['plover plover_plugin'],
+        license='GNU General Public License v2 or later (GPLv2+)',
+        name='zipped-egg-plugin',
+        summary='Zipped egg plugin for Plover',
+        version='0.1.0'
     )
     assert local_dist_info.available == []
     assert local_dist_info.latest is None

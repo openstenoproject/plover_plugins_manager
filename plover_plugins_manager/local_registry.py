@@ -4,9 +4,7 @@ from io import StringIO
 import site
 
 from pip._vendor.distlib.metadata import Metadata
-from pkg_resources import (
-    DistInfoDistribution, EggInfoDistribution, WorkingSet, find_distributions
-)
+from pkg_resources import DistInfoDistribution, WorkingSet, find_distributions
 
 from plover_plugins_manager.plugin_metadata import PluginMetadata
 
@@ -34,11 +32,9 @@ def list_plugins():
             continue
         if isinstance(dist, DistInfoDistribution):
             metadata_entry = 'METADATA'
-        elif isinstance(dist, EggInfoDistribution):
-            metadata_entry = 'PKG-INFO'
         else:
-            log.warning('ignoring distribution (unsupported type): %s [%s]', dist, dist.__class__)
-            continue
+            # Assume it's an egg distribution...
+            metadata_entry = 'PKG-INFO'
         if not dist.has_metadata(metadata_entry):
             log.warning('ignoring distribution (missing metadata): %s', dist)
             continue
