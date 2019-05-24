@@ -116,10 +116,13 @@ class VirtualEnv:
         env.update(dict(
             HOME=str(self.home.abspath()),
             VIRTUAL_ENV=str(self.venv.abspath()),
+            PYTHONUSERBASE=str(self.home.abspath()),
             PATH=os.pathsep.join((bindir, env['PATH'])),
         ))
         if enable_user_site:
             env['PYTHONPATH'] = str(self.user_site.abspath())
+        elif 'PYTHONPATH' in env:
+            del env['PYTHONPATH']
         cmd[0] = bindir / cmd[0]
         return self.workspace.run(cmd, capture=capture, env=env,
                                   cwd=self.plover.abspath())
