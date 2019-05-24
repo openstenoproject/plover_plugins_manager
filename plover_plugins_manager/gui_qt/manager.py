@@ -53,7 +53,7 @@ class PluginsManager(Tool, Ui_PluginsManager):
         self.table.sortByColumn(1, Qt.AscendingOrder)
         self._packages_updated.connect(self._on_packages_updated)
         if self._packages is None:
-            self.__class__._packages = Registry()
+            PluginsManager._packages = Registry()
         self._on_packages_updated()
         self.on_refresh()
 
@@ -192,7 +192,7 @@ class PluginsManager(Tool, Ui_PluginsManager):
             self.restart_button.setEnabled(True)
 
 
-if '__main__' == __name__:
+if __name__ == '__main__':
     from PyQt5.QtWidgets import QApplication
     from plover.registry import registry
     registry.update()

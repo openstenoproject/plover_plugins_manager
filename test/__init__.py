@@ -1,5 +1,4 @@
 from distutils import sysconfig
-from path import Path
 import ast
 import importlib
 import os
@@ -7,6 +6,7 @@ import stat
 import textwrap
 import venv
 
+from path import Path
 import pkg_resources
 
 
@@ -22,7 +22,7 @@ def patch_file(filename, patch):
         fp.write(contents)
 
 
-class VirtualEnv(object):
+class VirtualEnv:
 
     def __init__(self, workspace):
         self.workspace = workspace
@@ -97,8 +97,11 @@ class VirtualEnv(object):
         # Copy distribution info.
         clone(Path(src_dist.egg_info))
         # Copy top-level modules.
-        modules = list(src_dist._get_metadata('top_level.txt'))
-        for modname in modules or (dist_name,):
+        if src_dist.has_metadata('top_level.txt'):
+            modules = src_dist.get_metadata_lines('top_level.txt')
+        else:
+            modules = (dist_name,)
+        for modname in modules:
             spec = importlib.util.find_spec(modname)
             if spec is None:
                 continue
@@ -136,7 +139,8 @@ class VirtualEnv(object):
     def uninstall_plugins(self, args, **kwargs):
         return self.pyrun('-m plover_plugins_manager uninstall -y'.split() + args, **kwargs)
 
-    def list_distributions(self, directory):
+    @staticmethod
+    def list_distributions(directory):
         return {
             str(d.as_requirement())
             for d in pkg_resources.find_distributions(directory)

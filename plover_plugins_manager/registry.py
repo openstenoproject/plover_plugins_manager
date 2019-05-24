@@ -4,7 +4,7 @@ from plover import log
 from plover_plugins_manager import global_registry, local_registry
 
 
-class PackageState(object):
+class PackageState:
 
     def __init__(self, name, installed=None, available=None):
         self.name = name
@@ -47,7 +47,7 @@ class PackageState(object):
         return str(self)
 
 
-class Registry(object):
+class Registry:
 
     def __init__(self):
         self._packages = {
