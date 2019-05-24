@@ -21,7 +21,7 @@ _CSS = '\n'.join((
 
 
 def description_to_html(content, content_type):
-    renderer = _RENDERERS.get(content_type, readme_renderer.txt)
+    renderer = _RENDERERS.get(content_type, readme_renderer.rst)
     rendered = renderer.render(content)
     if rendered is None:
         rendered = readme_renderer.txt.render(content)
