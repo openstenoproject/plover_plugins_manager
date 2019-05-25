@@ -1,9 +1,8 @@
 
 from collections import defaultdict
-from io import StringIO
 import site
 
-from distlib.metadata import Metadata
+from pkginfo.distribution import Distribution as Metadata
 from pkg_resources import DistInfoDistribution, WorkingSet, find_distributions
 
 from plover_plugins_manager.plugin_metadata import PluginMetadata
@@ -38,9 +37,12 @@ def list_plugins():
         if not dist.has_metadata(metadata_entry):
             log.warning('ignoring distribution (missing metadata): %s', dist)
             continue
-        metadata_str = dist.get_metadata(metadata_entry)
-        dist_metadata = Metadata(fileobj=StringIO(metadata_str))
-        plugin_metadata = PluginMetadata.from_dict(dist_metadata.todict())
+        metadata = Metadata()
+        metadata.parse(dist.get_metadata(metadata_entry))
+        plugin_metadata = PluginMetadata.from_dict({
+            attr: getattr(metadata, attr)
+            for attr in PluginMetadata._fields
+        })
         plugins[dist.key].append(plugin_metadata)
     return {
         name: list(sorted(versions))
