@@ -14,10 +14,11 @@ def DALS(s):
     "dedent and left-strip"
     return textwrap.dedent(s).lstrip()
 
-def patch_file(filename, patch):
+def patch_file(filename, replace_old, replace_new):
     with open(filename, 'r') as fp:
         contents = fp.read()
-    contents = patch(contents)
+    assert replace_old in contents
+    contents = contents.replace(replace_old, replace_new)
     with open(filename, 'w') as fp:
         fp.write(contents)
 
@@ -49,12 +50,21 @@ class VirtualEnv:
         for dist_name in sorted(dist.project_name for dist in deps):
             self.clone_distribution(dist_name)
         # Fixup pip so using a virtualenv is not an issue.
-        pip_locations = self.site_packages / 'pip' / '_internal' / 'locations.py'
-        patch_file(pip_locations, lambda s: s.replace(
-            '\ndef running_under_virtualenv():\n',
-            '\ndef running_under_virtualenv():'
-            '\n    return False\n',
-        ))
+        for pip_locations in (
+            'pip/_internal/utils/virtualenv.py',
+            'pip/_internal/locations.py',
+            'pip/locations.py',
+        ):
+            pip_locations = self.site_packages / pip_locations
+            if pip_locations.exists():
+                break
+        else:
+            pip_locations = None
+        patch_file(pip_locations,
+                   '\ndef running_under_virtualenv():\n',
+                   '\ndef running_under_virtualenv():'
+                   '\n    return False\n',
+                  )
         # Set user site packages directory.
         self.user_site = Path(self.pyeval(DALS(
             '''
@@ -91,8 +101,12 @@ class VirtualEnv:
         """
         def clone(src_path):
             dst_path = self.site_packages / src_path.name
-            isdir = src_path.isdir()
-            (src_path.copytree if isdir else src_path.copyfile)(dst_path)
+            if dst_path.exists():
+                return
+            if src_path.isdir():
+                src_path.copytree(dst_path)
+            else:
+                src_path.copyfile(dst_path)
         src_dist = pkg_resources.get_distribution(dist_name)
         # Copy distribution info.
         clone(Path(src_dist.egg_info))

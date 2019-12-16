@@ -28,7 +28,7 @@ def fake_working_set(tmpdir, monkeypatch):
     tmp_prefix = tmpdir / 'prefix'
     tmp_prefix.mkdir()
     with tarfile.open('test/data/prefix.tar') as prefix:
-        prefix.extractall(path=tmp_prefix)
+        prefix.extractall(path=str(tmp_prefix))
     new_path = list(map(str, tmp_prefix.listdir('*.egg'))) + [str(tmp_prefix)]
     pr_state = pkg_resources.__getstate__()
     old_path = sys.path[:]
