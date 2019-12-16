@@ -4,8 +4,8 @@ Plover Plugin Manager
 Release history
 ---------------
 
-In development
-~~~~~~~~~~~~~~
+0.5.14
+~~~~~~
 
 * drop the use of pip's internal APIs
 * drop the dependency on PyQt5 WebEngine
