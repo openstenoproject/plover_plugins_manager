@@ -35,11 +35,13 @@ class InfoBrowser(QTextBrowser):
             return
         try:
             resp = future.result()
-            resp.raise_for_status()
-        except RequestException as exc:
+        except Exception as exc:
             log.error("error fetching %s", exc.request.url, exc_info=True)
-        else:
-            self._resource_downloaded.emit(resp.request.url, resp.content)
+            return
+        if not resp.ok:
+            log.info("error fetching %s: %s", resp.url, resp.reason)
+            return
+        self._resource_downloaded.emit(resp.request.url, resp.content)
 
     def setHtml(self, html):
         self._images.clear()
