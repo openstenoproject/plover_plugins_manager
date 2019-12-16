@@ -21,7 +21,10 @@ class InfoBrowser(QTextBrowser):
         self._resource_downloaded.connect(self._update_image_resource)
 
     def loadResource(self, resource_type, resource_url):
-        resource = super().loadResource(resource_type, resource_url)
+        if resource_url.isLocalFile():
+            resource = super().loadResource(resource_type, resource_url)
+        else:
+            resource = None
         resource_url = resource_url.url()
         if resource is None and resource_type == QTextDocument.ImageResource \
            and resource_url not in self._images:
