@@ -11,6 +11,7 @@ In development
 * drop the dependency on PyQt5 WebEngine
 * improve and simplify cache handling: persistently cache all network
   requests (with a 10 minutes expiration date)
+* support for Python 3.8
 
 0.5.13
 ~~~~~~
