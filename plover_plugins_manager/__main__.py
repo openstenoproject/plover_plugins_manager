@@ -36,8 +36,10 @@ def list_plugins(freeze=False):
                 print('  LATEST:    %s' % latest.version)
 
 
-def pip(args, stdin=None, stdout=None, stderr=None):
-    cmd = [sys.executable, '-m', 'pip', '--disable-pip-version-check']
+def pip(args, stdin=None, stdout=None, stderr=None, **kwargs):
+    cmd = [sys.executable, '-m',
+           'plover_plugins_manager.pip_wrapper',
+           '--disable-pip-version-check']
     env = dict(os.environ)
     # Make sure user plugins are handled
     # even if user site is not enabled.
@@ -68,7 +70,9 @@ def pip(args, stdin=None, stdout=None, stderr=None):
     else:
         raise ValueError('invalid command: %s' % command)
     cmd.extend(args)
-    return subprocess.Popen(cmd, env=env, stdin=stdin, stdout=stdout, stderr=stderr)
+    return subprocess.Popen(cmd, env=env, stdin=stdin,
+                            stdout=stdout, stderr=stderr,
+                            **kwargs)
 
 
 def main(args=None):

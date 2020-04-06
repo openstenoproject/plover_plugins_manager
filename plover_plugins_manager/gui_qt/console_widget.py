@@ -2,6 +2,7 @@
 import os
 import signal
 import subprocess
+import sys
 import threading
 
 from PyQt5.QtCore import (
@@ -37,17 +38,29 @@ class ConsoleWidget(QWidget, Ui_ConsoleWidget):
 
     def run(self, args):
         assert self._thread is None
+        if sys.platform.startswith('win32'):
+            # Make it possible to interrupt by sending a Ctrl+C event.
+            kwargs = {'creationflags': subprocess.CREATE_NEW_PROCESS_GROUP}
+        else:
+            kwargs = {}
         self._proc = self._popen(args, stdin=NULL,
                                  stdout=subprocess.PIPE,
-                                 stderr=subprocess.STDOUT)
+                                 stderr=subprocess.STDOUT,
+                                 **kwargs)
         self._thread = threading.Thread(target=self._subprocess)
         self._thread.start()
 
     def terminate(self):
         assert self._proc is not None
-        self._proc.send_signal(signal.SIGINT)
-        self._proc.stdout.close()
-        self._proc.terminate()
+        if sys.platform.startswith('win32'):
+            sig = signal.CTRL_C_EVENT
+        else:
+            sig = signal.SIGINT
+        self._proc.send_signal(sig)
+        try:
+            self._proc.wait(10)
+        except subprocess.TimeoutExpired:
+            self._proc.terminate()
         self._thread.join()
 
     def _subprocess(self):

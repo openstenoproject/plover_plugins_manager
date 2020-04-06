@@ -12,22 +12,23 @@ class RunDialog(QDialog, Ui_RunDialog):
         self.setupUi(self)
         self._console = ConsoleWidget(popen)
         self.layout().replaceWidget(self.console, self._console)
-        self.buttonBox.button(QDialogButtonBox.Ok).setDisabled(True)
+        self.buttonBox.button(QDialogButtonBox.Close).setHidden(True)
         self._console.processFinished.connect(self.on_process_finished)
         self._console.run(run_args)
         self._successful = None
 
     def on_process_finished(self, returncode):
         self._successful = returncode == 0
-        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(self._successful)
-        self.buttonBox.button(QDialogButtonBox.Cancel).setDisabled(self._successful)
+        self.buttonBox.button(QDialogButtonBox.Cancel).setHidden(True)
+        self.buttonBox.button(QDialogButtonBox.Close).setHidden(False)
 
     def reject(self):
         if self._successful is not None:
-            super(RunDialog, self).reject()
+            super().done(getattr(QDialog, 'Accepted'
+                                 if self._successful
+                                 else 'Rejected'))
             return
         self._console.terminate()
-        self.buttonBox.button(QDialogButtonBox.Cancel).setDisabled(True)
 
 
 if __name__ == '__main__':
