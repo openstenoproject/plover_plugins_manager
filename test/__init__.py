@@ -14,10 +14,10 @@ def DALS(s):
     "dedent and left-strip"
     return textwrap.dedent(s).lstrip()
 
-def patch_file(filename, replace_old, replace_new):
+def patch_file(filename, replace_old, replace_new, optional=True):
     with open(filename, 'r') as fp:
         contents = fp.read()
-    assert replace_old in contents
+    assert optional or replace_old in contents
     contents = contents.replace(replace_old, replace_new)
     with open(filename, 'w') as fp:
         fp.write(contents)
@@ -64,6 +64,12 @@ class VirtualEnv:
                    '\ndef running_under_virtualenv():\n',
                    '\ndef running_under_virtualenv():'
                    '\n    return False\n',
+                  )
+        patch_file(pip_locations,
+                   '\ndef virtualenv_no_global():\n',
+                   '\ndef virtualenv_no_global():'
+                   '\n    return False\n',
+                   optional=False,
                   )
         # Set user site packages directory.
         self.user_site = Path(self.pyeval(DALS(
