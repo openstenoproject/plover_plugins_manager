@@ -4,8 +4,8 @@ Plover Plugin Manager
 Release history
 ---------------
 
-In development
-~~~~~~~~~~~~~~
+0.5.15
+~~~~~~
 
 * fix support for cancelling an install/update/removal operation on Windows.
 
