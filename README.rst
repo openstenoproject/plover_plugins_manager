@@ -4,6 +4,12 @@ Plover Plugin Manager
 Release history
 ---------------
 
+In development
+~~~~~~~~~~~~~~
+
+* stop using PyPI's (disabled) XMLRPC search endpoint, and switch to a self-hosted registry of
+  available plugins (maintained at https://github.com/openstenoproject/plover_plugins_registry).
+
 0.5.15
 ~~~~~~
 

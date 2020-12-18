@@ -2,42 +2,40 @@ from concurrent.futures import as_completed
 import json
 import os
 
-from plover_plugins_manager.requests import CachedFuturesSession, XmlrpcProxy
+from plover_plugins_manager.requests import CachedFuturesSession
 
 
 PYPI_URL = 'https://pypi.org/pypi'
+REGISTRY_URL = 'https://github.com/openstenoproject/plover_plugins_registry/raw/master/registry.json'
 
 
-def find_plover_plugins_releases(pypi_url=None, capture=None):
-
-    if pypi_url is None:
-        pypi_url = os.environ.get('PYPI_URL')
-
-    if pypi_url is not None and os.path.exists(pypi_url):
-        assert capture is None
-        # Test code path.
-        with open(pypi_url) as fp:
-            return json.load(fp)
+def find_plover_plugins_releases(pypi_url=None, registry_url=None, capture=None):
 
     if pypi_url is None:
-        pypi_url = PYPI_URL
+        pypi_url = os.environ.get('PYPI_URL', PYPI_URL)
+
+    if registry_url is None:
+        registry_url = os.environ.get('REGISTRY_URL', REGISTRY_URL)
 
     session = CachedFuturesSession()
-    index = XmlrpcProxy(pypi_url, session=session.session)
 
     in_progress = set()
     all_releases = {}
 
-    def fetch_release(name, version):
+    def fetch_release(name, version=None):
         if (name, version) in all_releases:
             return
         all_releases[(name, version)] = None
-        in_progress.add(session.get('%s/%s/%s/json' % (pypi_url, name, version)))
+        if version is None:
+            url = '%s/%s/json' % (pypi_url, name)
+        else:
+            url = '%s/%s/%s/json' % (pypi_url, name, version)
+        in_progress.add(session.get(url))
 
     with session:
 
-        for match in index.search({'keywords': 'plover_plugin'}):
-            fetch_release(match['name'], match['version'])
+        for name in session.get(registry_url).result().json():
+            fetch_release(name)
 
         while in_progress:
             for future in as_completed(list(in_progress)):

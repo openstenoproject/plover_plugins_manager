@@ -9,17 +9,11 @@ from plover_plugins_manager.plugin_metadata import PluginMetadata
 
 
 @pytest.fixture
-def fake_cache(tmpdir, monkeypatch):
-    cache = tmpdir.join('cache')
-    monkeypatch.setattr('plover_plugins_manager.requests.CACHE_NAME', str(cache))
-    return cache
+def fake_global_registry(monkeypatch):
+    monkeypatch.setattr('plover_plugins_manager.global_registry.find_plover_plugins_releases', lambda: [])
 
 @pytest.fixture
-def fake_index(monkeypatch):
-    monkeypatch.setenv('PYPI_URL', 'test/data/index.json')
-
-@pytest.fixture
-def fake_working_set(tmpdir, monkeypatch):
+def fake_local_registry(tmpdir, monkeypatch):
     # Fake user site.
     tmp_user_site = tmpdir / 'user_site'
     tmp_user_site.mkdir()
@@ -40,11 +34,11 @@ def fake_working_set(tmpdir, monkeypatch):
         pkg_resources.__setstate__(pr_state)
 
 @pytest.fixture
-def fake_env(fake_cache, fake_index, fake_working_set):
+def fake_env(fake_global_registry, fake_local_registry):
     pass
 
 
-def test_fake_registry(fake_cache, fake_env):
+def test_fake_registry(fake_env):
     r = Registry()
     r.update()
     assert len(r) == 3
