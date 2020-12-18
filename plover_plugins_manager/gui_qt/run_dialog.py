@@ -8,7 +8,7 @@ from plover_plugins_manager.gui_qt.run_dialog_ui import Ui_RunDialog
 class RunDialog(QDialog, Ui_RunDialog):
 
     def __init__(self, run_args, popen=None):
-        super(RunDialog, self).__init__()
+        super().__init__()
         self.setupUi(self)
         self._console = ConsoleWidget(popen)
         self.layout().replaceWidget(self.console, self._console)

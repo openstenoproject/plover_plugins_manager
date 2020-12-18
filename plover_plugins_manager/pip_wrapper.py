@@ -10,4 +10,3 @@ if __name__ == '__main__':
     sys.exit(
         load_entry_point('pip', 'console_scripts', 'pip')()
     )
-

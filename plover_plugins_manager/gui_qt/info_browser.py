@@ -2,8 +2,6 @@ from PyQt5.QtGui import QImage, QTextDocument
 from PyQt5.QtWidgets import QTextBrowser
 from PyQt5.QtCore import QUrl, pyqtSignal
 
-from requests import RequestException
-
 from plover_plugins_manager.requests import CachedSession, FuturesSession
 
 from plover import log

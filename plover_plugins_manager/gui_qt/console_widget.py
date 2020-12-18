@@ -24,7 +24,7 @@ class ConsoleWidget(QWidget, Ui_ConsoleWidget):
     processFinished = pyqtSignal(QVariant)
 
     def __init__(self, popen=None):
-        super(ConsoleWidget, self).__init__()
+        super().__init__()
         self.setupUi(self)
         self.textOutput.connect(self.output.append)
         self._popen = subprocess.Popen if popen is None else popen

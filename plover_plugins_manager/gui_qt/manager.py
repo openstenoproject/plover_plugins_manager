@@ -31,7 +31,7 @@ class PluginsManager(Tool, Ui_PluginsManager):
     _packages_updated = pyqtSignal()
 
     def __init__(self, engine):
-        super(PluginsManager, self).__init__(engine)
+        super().__init__(engine)
         self.setupUi(self)
         self.uninstall_button.setEnabled(False)
         self.install_button.setEnabled(False)
