@@ -55,8 +55,8 @@ def find_plover_plugins_releases(pypi_url=None, capture=None):
                     continue
                 name, version = info['name'], info['version']
                 all_releases[(name, version)] = release
-                for version in release['releases'].keys():
-                    fetch_release(name, version)
+                # for version in release['releases'].keys():
+                #     fetch_release(name, version)
 
     all_releases = [
         release
