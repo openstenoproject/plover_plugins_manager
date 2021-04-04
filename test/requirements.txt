@@ -1,8 +1,0 @@
-path.py
-plover[gui_qt]>=4.0.0.dev8
-pytest-shutil
-pytest-xdist
-pytest
-setuptools-scm
-
-# vim: ft=cfg commentstring=#\ %s list

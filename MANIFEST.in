@@ -8,7 +8,6 @@ include test/data/prefix.tar
 include test/plover_template_system-0.1.0-py2.py3-none-any.whl
 include test/plover_template_system-0.2.0-py2.py3-none-any.whl
 include test/plover_template_system-0.1.0.tar.gz
-include test/requirements.txt
 include tox.ini
 # UI.
 exclude plover_plugins_manager/gui_qt/*_rc.py
