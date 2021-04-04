@@ -137,9 +137,7 @@ class PluginsManager(Tool, Ui_PluginsManager):
             self._engine.restart()
         else:
             atexit._run_exitfuncs()
-            args = sys.argv[:]
-            if args[0].endswith('.py') or args[0].endswith('.pyc'):
-                args.insert(0, sys.executable)
+            args = [sys.executable, '-m', __spec__.name]
             os.execv(args[0], args)
 
     def _update_packages(self):
