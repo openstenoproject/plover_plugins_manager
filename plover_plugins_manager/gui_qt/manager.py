@@ -6,7 +6,7 @@ import os
 import sys
 
 from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtWidgets import QDialog, QTableWidgetItem
+from PyQt5.QtWidgets import QDialog, QMessageBox, QTableWidgetItem
 
 from plover.gui_qt.tool import Tool
 
@@ -156,6 +156,17 @@ class PluginsManager(Tool, Ui_PluginsManager):
 
     def on_install(self):
         packages = self._get_selection()[0]
+        if QMessageBox.warning(
+            self, 'Install ' + ', '.join(packages), 
+            'Installing plugins is a <b>security risk</b>. '
+            'A plugin can contain virus/malware. '
+            'Only install it if you got it from a trusted source.'
+            ' Are you sure you want to proceed?'
+            ,
+            buttons=QMessageBox.Yes | QMessageBox.No,
+            defaultButton=QMessageBox.No
+        ) != QMessageBox.Yes:
+            return
         code = self._run(
             ['install'] +
             [self._packages[name].latest.requirement
