@@ -25,7 +25,7 @@ def patch_file(filename, replace_old, replace_new, optional=True):
 
 class VirtualEnv:
 
-    def __init__(self, workspace):
+    def __init__(self, workspace, cloaked=True):
         self.workspace = workspace
         self.venv = workspace.workspace / 'venv'
         self.site_packages = Path(sysconfig.get_python_lib(prefix=self.venv))
@@ -52,6 +52,17 @@ class VirtualEnv:
         resolve_deps('plover_plugins_manager')
         for dist in sorted(deps):
             self.clone_distribution(dist)
+        if cloaked:
+            self._cloak()
+        # Set user site packages directory.
+        self.user_site = Path(self.pyeval(DALS(
+            '''
+            import site
+            print(repr(site.USER_SITE))
+            '''
+        ), enable_user_site=False))
+
+    def _cloak(self):
         # Fixup pip so using a virtualenv is not an issue.
         for pip_locations in (
             'pip/_internal/utils/virtualenv.py',
@@ -74,13 +85,13 @@ class VirtualEnv:
                    '\n    return False\n',
                    optional=False,
                   )
-        # Set user site packages directory.
-        self.user_site = Path(self.pyeval(DALS(
-            '''
-            import site
-            print(repr(site.USER_SITE))
-            '''
-        ), enable_user_site=False))
+        ppm_utils_mod = self.site_packages / 'plover_plugins_manager/utils.py'
+        patch_file(ppm_utils_mod,
+                   '\ndef running_under_virtualenv():\n',
+                   '\ndef running_under_virtualenv():'
+                   '\n    return False\n',
+                   optional=False,
+                  )
 
     def _chmod_venv(self, add_mode, rm_mode):
         plover_path = self.plover.abspath()

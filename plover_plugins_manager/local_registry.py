@@ -6,6 +6,7 @@ from pkginfo.distribution import Distribution as Metadata
 from pkg_resources import DistInfoDistribution, WorkingSet, find_distributions
 
 from plover_plugins_manager.plugin_metadata import PluginMetadata
+from plover_plugins_manager.utils import running_under_virtualenv
 
 from plover import log
 
@@ -15,7 +16,8 @@ def list_plugins():
     # Make sure user site packages are added
     # to the set so user plugins are listed.
     user_site_packages = site.USER_SITE
-    if user_site_packages not in working_set.entries:
+    if not running_under_virtualenv() and \
+       user_site_packages not in working_set.entries:
         working_set.entry_keys.setdefault(user_site_packages, [])
         working_set.entries.append(user_site_packages)
         for dist in find_distributions(user_site_packages, only=True):

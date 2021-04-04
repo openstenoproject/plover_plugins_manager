@@ -1,3 +1,5 @@
+import sys
+
 from pygments.formatters import HtmlFormatter
 import readme_renderer.markdown
 import readme_renderer.rst
@@ -26,3 +28,13 @@ def description_to_html(content, content_type):
     if rendered is None:
         rendered = readme_renderer.txt.render(content)
     return _CSS, rendered
+
+
+def running_under_virtualenv():
+    if sys.prefix != getattr(sys, "base_prefix", sys.prefix):
+        # venv
+        return True
+    if hasattr(sys, 'real_prefix'):
+        # virtualenv
+        return True
+    return False

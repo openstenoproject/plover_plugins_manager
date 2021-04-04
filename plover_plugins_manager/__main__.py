@@ -7,6 +7,7 @@ import sys
 
 from plover_plugins_manager import global_registry
 from plover_plugins_manager import local_registry
+from plover_plugins_manager.utils import running_under_virtualenv
 
 
 def list_plugins(freeze=False):
@@ -43,7 +44,7 @@ def pip(args, stdin=None, stdout=None, stderr=None, **kwargs):
     env = dict(os.environ)
     # Make sure user plugins are handled
     # even if user site is not enabled.
-    if not site.ENABLE_USER_SITE:
+    if not running_under_virtualenv() and not site.ENABLE_USER_SITE:
         pypath = env.get('PYTHONPATH')
         if pypath is None:
             pypath = []
@@ -57,9 +58,10 @@ def pip(args, stdin=None, stdout=None, stderr=None, **kwargs):
     elif command == 'install':
         cmd.extend((
             'install',
-            '--user',
             '--upgrade-strategy=only-if-needed',
         ))
+        if not running_under_virtualenv():
+            cmd.append('--user')
     elif command == 'uninstall':
         cmd.append('uninstall')
     elif command == 'list':

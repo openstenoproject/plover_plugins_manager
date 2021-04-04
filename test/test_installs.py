@@ -86,3 +86,10 @@ def test_with_user_site_disabled(virtualenv):
     virtualenv.uninstall_plugins([TEST_DIST_0_1_0], enable_user_site=False)
     assert virtualenv.list_all_plugins(enable_user_site=False) == {MANAGER_DIST}
     assert virtualenv.list_user_plugins() == set()
+
+def test_install_to_venv(naked_virtualenv):
+    naked_virtualenv.install_plugins([TEST_WHEEL_0_2_0])
+    assert naked_virtualenv.list_user_plugins() == set()
+    assert naked_virtualenv.list_all_plugins() == {TEST_DIST_0_2_0, MANAGER_DIST}
+    naked_virtualenv.uninstall_plugins([TEST_DIST_0_2_0])
+    assert naked_virtualenv.list_all_plugins() == {MANAGER_DIST}
