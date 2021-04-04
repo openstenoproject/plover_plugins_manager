@@ -122,8 +122,12 @@ class VirtualEnv:
         else:
             modules = (dist_name,)
         for modname in modules:
+            # Fix some issue with setuptools + Python 3.6.
+            # Got I hate Python packaging...
+            if dist_name == 'setuptools' and modname == 'dist':
+                continue
             spec = importlib.util.find_spec(modname)
-            if spec is None:
+            if spec is None or spec.origin is None:
                 continue
             origin = Path(spec.origin)
             if origin.name == '__init__.py':
