@@ -133,6 +133,9 @@ class VirtualEnv:
             if origin.name == '__init__.py':
                 origin = origin.parent
             clone(origin)
+        # Fix missing cffi library...
+        if src_dist.key == 'cffi':
+            clone(Path(src_dist.location) / 'cffi.libs')
 
     def run(self, cmd, capture=False, enable_user_site=True):
         bindir = self.venv.abspath() / 'bin'
