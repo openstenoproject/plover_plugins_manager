@@ -39,16 +39,19 @@ class VirtualEnv:
         (self.plover / 'plover.cfg').touch()
         # Install dependencies.
         deps = set()
-        def resolve_deps(dist):
-            if dist in deps:
+        resolved = set()
+        def resolve_deps(req):
+            if req in resolved:
                 return
+            if isinstance(req, str):
+                req = pkg_resources.Requirement(req)
+            dist = pkg_resources.get_distribution(req)
             deps.add(dist)
-            for req in dist.requires():
-                resolve_deps(pkg_resources.get_distribution(req))
-        resolve_deps(pkg_resources.get_distribution('plover_plugins_manager'))
-        resolve_deps(pkg_resources.get_distribution('PyQt5'))
-        for dist_name in sorted(dist.project_name for dist in deps):
-            self.clone_distribution(dist_name)
+            for sub_req in dist.requires(req.extras):
+                resolve_deps(sub_req)
+        resolve_deps('plover_plugins_manager')
+        for dist in sorted(deps):
+            self.clone_distribution(dist)
         # Fixup pip so using a virtualenv is not an issue.
         for pip_locations in (
             'pip/_internal/utils/virtualenv.py',
@@ -100,31 +103,28 @@ class VirtualEnv:
     def thaw(self):
         self._chmod_venv(stat.S_IWUSR | stat.S_IWGRP | stat.S_IWOTH, 0)
 
-    def clone_distribution(self, dist_name):
+    def clone_distribution(self, src_dist):
         """
         Clone a distribution from the current
         environment to the virtual environment.
         """
         def clone(src_path):
             dst_path = self.site_packages / src_path.name
-            if dst_path.exists():
-                return
             if src_path.isdir():
                 src_path.copytree(dst_path)
             else:
                 src_path.copyfile(dst_path)
-        src_dist = pkg_resources.get_distribution(dist_name)
         # Copy distribution info.
         clone(Path(src_dist.egg_info))
         # Copy top-level modules.
         if src_dist.has_metadata('top_level.txt'):
             modules = src_dist.get_metadata_lines('top_level.txt')
         else:
-            modules = (dist_name,)
+            modules = (src_dist.key,)
         for modname in modules:
             # Fix some issue with setuptools + Python 3.6.
             # Got I hate Python packaging...
-            if dist_name == 'setuptools' and modname == 'dist':
+            if src_dist.key == 'setuptools' and modname == 'dist':
                 continue
             spec = importlib.util.find_spec(modname)
             if spec is None or spec.origin is None:
