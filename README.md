@@ -2,6 +2,11 @@
 
 ## Release history
 
+### 0.6.0
+
+* warn users about the security risk when installing plugins
+* fix plugin install/removal when running in a Python virtual environment
+
 ### 0.5.16
 
 * stop using PyPI's (disabled) XMLRPC search endpoint, and switch to a self-hosted registry of
