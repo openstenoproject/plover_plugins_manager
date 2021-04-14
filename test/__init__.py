@@ -131,7 +131,7 @@ class VirtualEnv:
         if src_dist.has_metadata('top_level.txt'):
             modules = src_dist.get_metadata_lines('top_level.txt')
         else:
-            modules = (src_dist.key,)
+            modules = (src_dist.key.replace('-', '_'),)
         for modname in modules:
             # Fix some issue with setuptools + Python 3.6.
             # Got I hate Python packaging...
