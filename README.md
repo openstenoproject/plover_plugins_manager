@@ -2,6 +2,10 @@
 
 ## Release history
 
+### 0.6.1
+
+* minor tweaks to make packaging for AUR easier
+
 ### 0.6.0
 
 * warn users about the security risk when installing plugins
