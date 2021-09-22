@@ -2,6 +2,10 @@
 
 ## Release history
 
+### 0.6.2
+
+* fix compatibility with `requests-cache>=0.8.0`
+
 ### 0.6.1
 
 * minor tweaks to make packaging for AUR easier
