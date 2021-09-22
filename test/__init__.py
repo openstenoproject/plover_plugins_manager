@@ -119,12 +119,26 @@ class VirtualEnv:
         Clone a distribution from the current
         environment to the virtual environment.
         """
-        def clone(src_path):
-            dst_path = self.site_packages / src_path.name
+        def clone(src_path, dst_path=None):
+            if dst_path is None:
+                dst_path = self.site_packages / src_path.name
+            dst_dir = dst_path.parent
+            if not dst_dir.exists():
+                dst_dir.makedirs()
             if src_path.isdir():
                 src_path.copytree(dst_path)
             else:
                 src_path.copyfile(dst_path)
+        src_location = Path(src_dist.location)
+        # If we have a RECORD manifest, and it's not an editable install, use that.
+        if src_dist.has_metadata('RECORD') and not (src_location / (src_dist.key + '.egg-link')).exists():
+            for entry in src_dist.get_metadata_lines('RECORD'):
+                src_path = Path(entry.split(',')[0])
+                if src_path.endswith('.pyc') or '__pycache__' in src_path.parts():
+                    continue
+                assert src_path.isabs
+                clone(src_location / src_path, self.site_packages / src_path)
+            return
         # Copy distribution info.
         clone(Path(src_dist.egg_info))
         # Copy top-level modules.
@@ -146,7 +160,7 @@ class VirtualEnv:
             clone(origin)
         # Fix missing cffi library...
         if src_dist.key == 'cffi':
-            clone(Path(src_dist.location) / 'cffi.libs')
+            clone(src_location / 'cffi.libs')
 
     def run(self, cmd, capture=False, enable_user_site=True):
         bindir = self.venv.abspath() / 'bin'
