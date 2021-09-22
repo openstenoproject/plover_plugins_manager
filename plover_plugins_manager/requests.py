@@ -1,7 +1,7 @@
 import os
 
 from requests_futures.sessions import FuturesSession
-from requests_cache import core as cache_core
+from requests_cache import CachedSession
 
 from plover.oslayer.config import CONFIG_DIR
 
@@ -9,7 +9,7 @@ from plover.oslayer.config import CONFIG_DIR
 CACHE_NAME = os.path.join(CONFIG_DIR, '.cache', 'plugins')
 
 
-class CachedSession(cache_core.CachedSession):
+class CachedSession(CachedSession):
 
     def __init__(self):
         dirname = os.path.dirname(CACHE_NAME)
