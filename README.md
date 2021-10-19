@@ -2,6 +2,10 @@
 
 ## Release history
 
+### 0.6.3
+
+* fix Python packaging
+
 ### 0.6.2
 
 * fix compatibility with `requests-cache>=0.8.0`
