@@ -44,12 +44,19 @@ class InfoBrowser(QTextBrowser):
             return
         self._resource_downloaded.emit(resp.request.url, resp.content)
 
-    def setHtml(self, html):
+    def _reset_session(self):
         self._images.clear()
         if self._futures_session is not None:
             self._futures_session.close()
         self._futures_session = FuturesSession(session=self._session)
+
+    def setHtml(self, html):
+        self._reset_session()
         super().setHtml(html)
+
+    def setSource(self, url, kind):
+        self._reset_session()
+        super().setSource(url, kind)
 
     def _iter_fragments(self):
         bl = self.document().firstBlock()
