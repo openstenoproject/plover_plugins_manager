@@ -2,6 +2,10 @@
 
 ## Release history
 
+### 0.7.0
+
+* tweak custom info widget's API for reuse in other plugins
+
 ### 0.6.3
 
 * fix Python packaging
