@@ -11,8 +11,8 @@ TEST_DIST = 'plover-template-system'
 TEST_DIST_0_1_0 = TEST_DIST + '==0.1.0'
 TEST_DIST_0_2_0 = TEST_DIST + '==0.2.0'
 TEST_SDIST_0_1_0 = TEST_DIR / 'plover_template_system-0.1.0.tar.gz'
-TEST_WHEEL_0_1_0 = TEST_DIR / 'plover_template_system-0.1.0-py2.py3-none-any.whl'
-TEST_WHEEL_0_2_0 = TEST_DIR / 'plover_template_system-0.2.0-py2.py3-none-any.whl'
+TEST_WHEEL_0_1_0 = TEST_DIR / 'plover_template_system-0.1.0-py3-none-any.whl'
+TEST_WHEEL_0_2_0 = TEST_DIR / 'plover_template_system-0.2.0-py3-none-any.whl'
 MANAGER_DIST = str(pkg_resources.get_distribution('plover_plugins_manager').as_requirement())
 
 
