@@ -6,7 +6,7 @@ from . import DALS
 
 
 DEP_SPECS = (
-    'pip==9.0.3', 'pip==10.0', 'pip==18.0', 'pip==latest',
+    'pip==18.0', 'pip==latest',
 )
 
 _py_ver = sys.version_info[:2]
@@ -33,7 +33,6 @@ DEP_SPECS += (
 
 @pytest.mark.parametrize('dep_spec', DEP_SPECS)
 def test_global_registry_deps_support(virtualenv, dep_spec):
-    # Simple test to check the code relying on pip's internals work.
     virtualenv.thaw()
     if dep_spec.endswith('==latest'):
         dep_spec = dep_spec[:-len('==latest')]
