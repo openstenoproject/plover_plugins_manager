@@ -2,6 +2,7 @@ from distutils import sysconfig
 import ast
 import importlib
 import os
+import re
 import stat
 import textwrap
 import venv
@@ -14,13 +15,13 @@ def DALS(s):
     "dedent and left-strip"
     return textwrap.dedent(s).lstrip()
 
-def patch_file(filename, replace_old, replace_new, optional=True):
+def patch_file(filename, pattern, replacement, optional=True):
     with open(filename, 'r') as fp:
         contents = fp.read()
-    assert optional or replace_old in contents
-    contents = contents.replace(replace_old, replace_new)
+    new_contents = re.sub(pattern, replacement, contents, flags=re.MULTILINE)
+    assert optional or new_contents != contents
     with open(filename, 'w') as fp:
-        fp.write(contents)
+        fp.write(new_contents)
 
 
 class VirtualEnv:
@@ -75,21 +76,21 @@ class VirtualEnv:
         else:
             pip_locations = None
         patch_file(pip_locations,
-                   '\ndef running_under_virtualenv():\n',
-                   '\ndef running_under_virtualenv():'
-                   '\n    return False\n',
+                   r'^def running_under_virtualenv\(\)(.*):$',
+                   r'def running_under_virtualenv()\1:\n'
+                   r'    return False',
                   )
         patch_file(pip_locations,
-                   '\ndef virtualenv_no_global():\n',
-                   '\ndef virtualenv_no_global():'
-                   '\n    return False\n',
+                   r'^def virtualenv_no_global\(\)(.*):$',
+                   r'def virtualenv_no_global()\1:\n'
+                   r'    return False',
                    optional=False,
                   )
         ppm_utils_mod = self.site_packages / 'plover_plugins_manager/utils.py'
         patch_file(ppm_utils_mod,
-                   '\ndef running_under_virtualenv():\n',
-                   '\ndef running_under_virtualenv():'
-                   '\n    return False\n',
+                   r'^def running_under_virtualenv\(\):$',
+                   r'def running_under_virtualenv():\n'
+                   r'    return False',
                    optional=False,
                   )
 
