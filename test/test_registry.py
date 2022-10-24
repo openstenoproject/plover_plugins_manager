@@ -22,7 +22,29 @@ def fake_local_registry(tmpdir, monkeypatch):
     tmp_prefix = tmpdir / 'prefix'
     tmp_prefix.mkdir()
     with tarfile.open('test/data/prefix.tar') as prefix:
-        prefix.extractall(path=str(tmp_prefix))
+        
+        import os
+        
+        def is_within_directory(directory, target):
+            
+            abs_directory = os.path.abspath(directory)
+            abs_target = os.path.abspath(target)
+        
+            prefix = os.path.commonprefix([abs_directory, abs_target])
+            
+            return prefix == abs_directory
+        
+        def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+        
+            for member in tar.getmembers():
+                member_path = os.path.join(path, member.name)
+                if not is_within_directory(path, member_path):
+                    raise Exception("Attempted Path Traversal in Tar File")
+        
+            tar.extractall(path, members, numeric_owner=numeric_owner) 
+            
+        
+        safe_extract(prefix, path=str(tmp_prefix))
     new_path = list(map(str, tmp_prefix.listdir('*.egg'))) + [str(tmp_prefix)]
     pr_state = pkg_resources.__getstate__()
     old_path = sys.path[:]
