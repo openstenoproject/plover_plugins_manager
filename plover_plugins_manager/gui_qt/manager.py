@@ -6,7 +6,7 @@ import os
 import sys
 
 from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtWidgets import QDialog, QMessageBox, QTableWidgetItem
+from PyQt5.QtWidgets import QDialog, QMessageBox, QTableWidgetItem, QInputDialog
 
 from plover.gui_qt.tool import Tool
 
@@ -154,6 +154,34 @@ class PluginsManager(Tool, Ui_PluginsManager):
         self.refresh_button.hide()
         self.progress.show()
 
+    def on_install_git(self):
+        url, ok = QInputDialog.getText(
+            self, "Install from Git repo", 
+            'Enter repository link for plugin\n'
+            '(will look similar to '
+            'https://github.com/user/repository.git): '
+            )
+        if not ok:
+            return
+        if QMessageBox.warning(
+            self, 'Install from Git repo', 
+            'Installing plugins is a <b>security risk</b>. '
+            'A plugin from a Git repo can contain malicious code. '
+            'Only install it if you got it from a trusted source.'
+            ' Are you sure you want to proceed?'
+            ,
+            buttons=QMessageBox.Yes | QMessageBox.No,
+            defaultButton=QMessageBox.No
+        ) != QMessageBox.Yes:
+            return
+        code = self._run(
+            ['install'] +
+            ['git+' + url]
+        )
+        if code == QDialog.Accepted:
+            self._update_table()
+            self.restart_button.setEnabled(True)
+           
     def on_install(self):
         packages = self._get_selection()[0]
         if QMessageBox.warning(
