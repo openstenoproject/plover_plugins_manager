@@ -22,7 +22,7 @@ class PluginsManager(Tool, Ui_PluginsManager):
 
     TITLE = 'Plugins Manager'
     ROLE = 'plugins_manager'
-    ICON = ':/plugins_manager/icon.svg'
+    ICON = ('plover_plugins_manager.gui_qt.resources', ':/icon.svg')
 
     # We use a class instance so the state is persistent
     # accross different executions of the dialog when
