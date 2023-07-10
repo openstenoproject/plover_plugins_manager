@@ -14,3 +14,4 @@ exclude plover_plugins_manager/gui_qt/*_ui.py
 include plover_plugins_manager/gui_qt/*.ui
 include plover_plugins_manager/gui_qt/resources/*.svg
 include plover_plugins_manager/gui_qt/resources/*.qrc
+include plover_plugins_manager/gui_qt/resources/__init__.py
