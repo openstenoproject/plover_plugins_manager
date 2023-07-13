@@ -10,7 +10,8 @@ include test/plover_template_system-0.1.0-py3-none-any.whl
 include test/plover_template_system-0.2.0-py3-none-any.whl
 include tox.ini
 # UI.
-exclude plover_plugins_manager/gui_qt/*_rc.py
 exclude plover_plugins_manager/gui_qt/*_ui.py
 include plover_plugins_manager/gui_qt/*.ui
-recursive-include plover_plugins_manager/gui_qt/resources *
+include plover_plugins_manager/gui_qt/resources/*.svg
+include plover_plugins_manager/gui_qt/resources/*.qrc
+include plover_plugins_manager/gui_qt/resources/__init__.py

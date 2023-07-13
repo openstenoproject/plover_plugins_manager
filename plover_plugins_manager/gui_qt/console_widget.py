@@ -5,12 +5,12 @@ import subprocess
 import sys
 import threading
 
-from PyQt5.QtCore import (
+from PyQt6.QtCore import (
     QVariant,
     pyqtSignal,
 )
-from PyQt5.QtGui import QFontDatabase, QFontMetrics
-from PyQt5.QtWidgets import QWidget
+from PyQt6.QtGui import QFontDatabase, QFontMetrics
+from PyQt6.QtWidgets import QWidget
 
 from plover_plugins_manager.gui_qt.console_widget_ui import Ui_ConsoleWidget
 
@@ -30,7 +30,7 @@ class ConsoleWidget(QWidget, Ui_ConsoleWidget):
         self._popen = subprocess.Popen if popen is None else popen
         self._proc = None
         self._thread = None
-        font = QFontDatabase.systemFont(QFontDatabase.FixedFont)
+        font = QFontDatabase.systemFont(QFontDatabase.SystemFont.FixedFont)
         metrics = QFontMetrics(font)
         self.output.setMinimumSize(80 * metrics.maxWidth(),
                                    24 * metrics.height())
