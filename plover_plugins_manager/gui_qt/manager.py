@@ -64,7 +64,7 @@ class PluginsManager(Tool, Ui_PluginsManager):
         self.table.setRowCount(len(self._packages))
         for row, state in enumerate(self._packages):
             for column, attr in enumerate('status name version summary'.split()):
-                item = QTableWidgetItem(getattr(state, attr))
+                item = QTableWidgetItem(getattr(state, attr, "N/A"))
                 item.setFlags(item.flags() & ~Qt.ItemIsEditable)
                 self.table.setItem(row, column, item)
         self.table.resizeColumnsToContents()
