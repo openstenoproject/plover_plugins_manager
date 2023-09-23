@@ -2,6 +2,10 @@
 
 ## Release history
 
+### 0.7.2
+
+* added button in UI to take Git url for installation
+
 ### 0.7.1
 
 * fix editable installation (ensure UI files are properly generated)
@@ -75,7 +79,7 @@
 
 ## Credits
 
-Icon made by [Freepik][] from [www.flaticon.com][].
+Icons made by [Freepik][] from [www.flaticon.com][] and Yusuke Kamiyamane.
 
   [Freepik]: http://www.freepik.com/
   [www.flaticon.com]: http://www.flaticon.com/

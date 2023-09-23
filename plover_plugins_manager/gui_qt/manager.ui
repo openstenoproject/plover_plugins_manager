@@ -119,6 +119,17 @@
            </property>
           </widget>
          </item>
+         <item>
+          <widget class="QToolButton" name="install_git">
+           <property name="text">
+            <string>...</string>
+           </property>
+           <property name="icon">
+            <iconset resource="resources/resources.qrc">
+             <normaloff>:/plugins_manager/git.png</normaloff>:/plugins_manager/git.png</iconset>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
       </layout>
@@ -211,6 +222,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>install_git</sender>
+   <signal>clicked()</signal>
+   <receiver>PluginsManager</receiver>
+   <slot>on_install_git()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>768</x>
+     <y>539</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>on_selection_changed()</slot>
@@ -218,5 +245,6 @@
   <slot>on_restart()</slot>
   <slot>on_uninstall()</slot>
   <slot>on_refresh()</slot>
+  <slot>on_install_git()</slot>
  </slots>
 </ui>
