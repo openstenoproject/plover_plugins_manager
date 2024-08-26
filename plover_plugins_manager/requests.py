@@ -18,7 +18,7 @@ class CachedSession(CachedSession):
         super().__init__(cache_name=CACHE_NAME,
                          backend='sqlite',
                          expire_after=600)
-        self.remove_expired_responses()
+        self.cache.delete(expired=True)
 
 
 class CachedFuturesSession(FuturesSession):
