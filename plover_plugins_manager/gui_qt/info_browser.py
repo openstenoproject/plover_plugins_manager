@@ -1,6 +1,6 @@
-from PyQt5.QtGui import QImage, QTextDocument
-from PyQt5.QtWidgets import QTextBrowser
-from PyQt5.QtCore import QUrl, pyqtSignal
+from PyQt6.QtGui import QImage, QTextDocument
+from PyQt6.QtWidgets import QTextBrowser
+from PyQt6.QtCore import QUrl, pyqtSignal
 
 from plover_plugins_manager.requests import CachedSession, FuturesSession
 
@@ -24,7 +24,7 @@ class InfoBrowser(QTextBrowser):
         else:
             resource = None
         resource_url = resource_url.url()
-        if resource is None and resource_type == QTextDocument.ImageResource \
+        if resource is None and resource_type == QTextDocument.ResourceType.ImageResource \
            and resource_url not in self._images:
             future = self._futures_session.get(resource_url)
             future.add_done_callback(self._request_finished)
@@ -78,7 +78,7 @@ class InfoBrowser(QTextBrowser):
             log.warning('could not load image from %s', url)
             return
         doc = self.document()
-        doc.addResource(QTextDocument.ImageResource, QUrl(url), image)
+        doc.addResource(QTextDocument.ResourceType.ImageResource, QUrl(url), image)
         for frag in self._iter_fragments():
             fmt = frag.charFormat()
             if fmt.isImageFormat() and fmt.toImageFormat().name() == url:

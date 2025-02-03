@@ -14,4 +14,4 @@ cmdclass = {
     'develop': Develop,
 }
 
-setup(cmdclass=cmdclass)
+setup(cmdclass=cmdclass, include_package_data=True)

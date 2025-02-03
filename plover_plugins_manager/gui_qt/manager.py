@@ -5,8 +5,8 @@ import html
 import os
 import sys
 
-from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtWidgets import QDialog, QMessageBox, QTableWidgetItem, QInputDialog
+from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtWidgets import QDialog, QMessageBox, QTableWidgetItem, QInputDialog
 
 from plover.gui_qt.tool import Tool
 
@@ -22,7 +22,7 @@ class PluginsManager(Tool, Ui_PluginsManager):
 
     TITLE = 'Plugins Manager'
     ROLE = 'plugins_manager'
-    ICON = ':/plugins_manager/icon.svg'
+    ICON = ('plover_plugins_manager.gui_qt.resources', ':/icon.svg')
 
     # We use a class instance so the state is persistent
     # accross different executions of the dialog when
@@ -38,7 +38,7 @@ class PluginsManager(Tool, Ui_PluginsManager):
         self._engine = engine
         self.info = InfoBrowser()
         self.info_frame.layout().addWidget(self.info)
-        self.table.sortByColumn(1, Qt.AscendingOrder)
+        self.table.sortByColumn(1, Qt.SortOrder.AscendingOrder)
         self._packages_updated.connect(self._on_packages_updated)
         if self._packages is None:
             PluginsManager._packages = Registry()
@@ -65,13 +65,13 @@ class PluginsManager(Tool, Ui_PluginsManager):
         for row, state in enumerate(self._packages):
             for column, attr in enumerate('status name version summary'.split()):
                 item = QTableWidgetItem(getattr(state, attr, "N/A"))
-                item.setFlags(item.flags() & ~Qt.ItemIsEditable)
+                item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
                 self.table.setItem(row, column, item)
         self.table.resizeColumnsToContents()
         self.table.setSortingEnabled(True)
 
     def _get_state(self, row):
-        name = self.table.item(row, 1).data(Qt.DisplayRole)
+        name = self.table.item(row, 1).data(Qt.ItemDataRole.DisplayRole)
         return self._packages[name]
 
     def _get_selection(self):
@@ -93,7 +93,7 @@ class PluginsManager(Tool, Ui_PluginsManager):
     @staticmethod
     def _run(args):
         dialog = RunDialog(args, popen=pip)
-        code = dialog.exec_()
+        code = dialog.exec()
         # dialog.destroy()
         return code
 
@@ -185,22 +185,22 @@ class PluginsManager(Tool, Ui_PluginsManager):
     def on_install(self):
         packages = self._get_selection()[0]
         if QMessageBox.warning(
-            self, 'Install ' + ', '.join(packages), 
+            self, 'Install ' + ', '.join(packages),
             'Installing plugins is a <b>security risk</b>. '
             'A plugin can contain virus/malware. '
             'Only install it if you got it from a trusted source.'
             ' Are you sure you want to proceed?'
             ,
-            buttons=QMessageBox.Yes | QMessageBox.No,
-            defaultButton=QMessageBox.No
-        ) != QMessageBox.Yes:
+            buttons=QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            defaultButton=QMessageBox.StandardButton.No
+        ) != QMessageBox.StandardButton.Yes:
             return
         code = self._run(
             ['install'] +
             [self._packages[name].latest.requirement
              for name in packages]
         )
-        if code == QDialog.Accepted:
+        if code == QDialog.DialogCode.Accepted:
             for name in packages:
                 state = self._packages[name]
                 state.current = state.latest
@@ -210,7 +210,7 @@ class PluginsManager(Tool, Ui_PluginsManager):
     def on_uninstall(self):
         packages = self._get_selection()[1]
         code = self._run(['uninstall', '-y'] + packages)
-        if code == QDialog.Accepted:
+        if code == QDialog.DialogCode.Accepted:
             for name in packages:
                 state = self._packages[name]
                 state.current = None
@@ -219,8 +219,8 @@ class PluginsManager(Tool, Ui_PluginsManager):
 
 
 if __name__ == '__main__':
-    from PyQt5.QtWidgets import QApplication
+    from PyQt6.QtWidgets import QApplication
     app = QApplication([])
     dlg = PluginsManager(None)
     dlg.show()
-    app.exec_()
+    app.exec()

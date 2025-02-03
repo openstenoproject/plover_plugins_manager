@@ -1,5 +1,5 @@
 <RCC>
-  <qresource prefix="/plugins_manager">
+  <qresource>
     <file>git.png</file>
     <file>icon.svg</file>
   </qresource>
