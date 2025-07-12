@@ -1,7 +1,27 @@
 # Plover Plugin Manager
 
+> **⚠️  Important:** This standalone Plugin Manager is only required for **Plover v4**.  
+> Starting with **Plover v5** its functionality is built directly into Plover itself, so you
+> do **not** need to install or update this package when running Plover v5 or later.
+
+
 ## Release history
 
+### 0.7.9
+
+* Remove debugging prints from previous tests
+
+### 0.7.8
+
+* Added debugging prints
+
+### 0.7.7
+
+* Burned during testing 
+
+### 0.7.6
+
+* Burned during testing 
 
 ### 0.7.5
 
