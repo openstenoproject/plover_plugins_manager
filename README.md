@@ -2,6 +2,11 @@
 
 ## Release history
 
+
+### 0.7.5
+
+* add workaround for different requests-cache versions
+
 ### 0.7.4
 
 * fix plugin version parsing since pkginfo now returns packaging.version.Version objects instead of plain strings
