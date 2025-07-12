@@ -24,7 +24,25 @@ class PluginMetadata(namedtuple('PluginMetadata', '''
 
     @property
     def parsed_version(self):
-        return parse_version(str(self.version or ""))
+        v = self.version
+
+        try:
+            from packaging.version import Version as PackagingVersion
+            if isinstance(v, PackagingVersion):
+                v = str(v)
+        except Exception:
+            # 'packaging' may not be importable in old environments
+            pass
+
+        # Decode raw bytes/bytearray → str
+        if isinstance(v, (bytes, bytearray)):
+            try:
+                v = v.decode()
+            except Exception:
+                v = ''
+
+        # Final fallback: ensure we hand a string to parse_version
+        return parse_version(str(v) or '0')
 
     @classmethod
     def from_dict(cls, d):
