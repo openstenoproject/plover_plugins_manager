@@ -1,4 +1,3 @@
-
 from collections import namedtuple
 from functools import total_ordering
 
@@ -25,7 +24,7 @@ class PluginMetadata(namedtuple('PluginMetadata', '''
 
     @property
     def parsed_version(self):
-        return parse_version(self.version)
+        return parse_version(str(self.version or ""))
 
     @classmethod
     def from_dict(cls, d):
