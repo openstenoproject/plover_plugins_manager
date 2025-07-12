@@ -2,6 +2,17 @@
 
 ## Release history
 
+### 0.7.4
+
+* fix plugin version parsing since pkginfo now returns packaging.version.Version objects instead of plain strings
+* fix CachedSession.remove_expired_responses() error
+* change caching from sqlite to memory since that's more robust
+
+### 0.7.3
+
+* burned this release number with a wrong upload to PyPi
+
+
 ### 0.7.2
 
 * added button in UI to take Git url for installation
