@@ -10,7 +10,13 @@ class CachedSession(CachedSession):
     def __init__(self):
         super().__init__(backend='memory',
                          expire_after=600)
-        self.cache.delete(expired=True)
+        try:
+            # requests-cache >= 1.0
+            self.cache.delete(expired=True)
+        except TypeError:
+            # Fallback for requests-cache 0.9.x
+            if hasattr(self.cache, "remove_expired_responses"):
+                self.cache.remove_expired_responses()
 
 
 class CachedFuturesSession(FuturesSession):
